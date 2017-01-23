@@ -1,0 +1,152 @@
+---
+title: "异常订单日报"
+output:
+  html_document: default
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+setwd("~/projects/abn_order2/")
+library(ggplot2)
+library(scales)
+library(gtable)
+library(grid)
+library(dplyr)
+
+abn_daily <- read.csv("data/0120-b.csv", colClasses=c("Date", "factor", "factor", "factor", "numeric", "numeric", "numeric"))
+```
+
+## pie plot
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+today_overall <- subset(abn_daily, order_date=="2017-01-19" & respb_scene == "_\xbb\xe3\xd7\xdc")
+today_overall$abn <- droplevels(today_overall$abn) # remove unused levels
+levels(today_overall$abn) <- c("订单取消_运单异常","订单取消_运单正常","订单正常_运单异常","订单正常_运单超时","订单取消_无运单")
+today_overall$percent <- today_overall$actualcnt / sum(today_overall$actualcnt)
+bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn))+
+geom_bar(width = 1, stat = "identity") + theme(text = element_text(family = 'SimSun'))
+pie <- bp + coord_polar("y", start=0)
+midpoint <- cumsum(rev(today_overall$percent)) - rev(today_overall$percent)/2
+pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent)))
+```
+
+## 总异常订单量（率）趋势
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+abn_ratio <- abn_daily  %>%
+  filter(respb_scene == "_\xbb\xe3\xd7\xdc") %>%
+  group_by(order_date) %>%
+  summarize(abn_ratio=sum(cnt))
+
+abn_payed_ratio <- abn_daily %>%
+  filter(abn=="payed") %>%
+  select(order_date, ratio_payed)
+
+abn_created_cnt <- abn_daily %>%
+  filter(abn=="created") %>%
+  select(order_date, cnt)
+
+temp <-merge(abn_ratio, abn_payed_ratio, by="order_date")
+abn_overall <- merge(temp, abn_created_cnt, by="order_date")
+abn_overall <- abn_overall %>%
+  mutate(abn_cnt=abn_ratio*cnt*ratio_payed/10000)
+
+abn_total_cnt <- abn_overall %>%
+  mutate(type="created") %>%
+  mutate(value=cnt) %>%
+  select(order_date, value, type)
+
+abn_cnt <- abn_overall %>%
+  mutate(value=abn_cnt) %>%
+  mutate(type="abn") %>%
+  select(order_date, value, type)
+
+abn_total_abn_cnt <- rbind(abn_total_cnt, abn_cnt)
+abn_total_abn_cnt$type <- as.factor(abn_total_abn_cnt$type)
+levels(abn_total_abn_cnt$type) <- c("总异常订单量", "创建订单量")
+p1 <- ggplot(abn_total_abn_cnt, aes(x=order_date, y=value)) +
+  geom_area(alpha = 0.7, position = 'identity', aes(fill = type)) + theme(axis.text.x = element_text(angle = 90), legend.position = "bottom", legend.title = element_blank(), text = element_text('SimSun')) + labs(x = "日期", y = "数量") + scale_y_continuous(labels = comma) + scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d"))
+
+max_y <- ceiling(max(abn_overall$abn_ratio) * 1.15)
+p2 <- ggplot(abn_overall, aes(x=order_date)) + geom_line(aes(y = abn_ratio, colour = "总异常率")) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + scale_colour_brewer(palette = "Set1") + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA)) + ylim(0, max_y) + ylab("aaaa")
+
+g1 <- ggplot_gtable(ggplot_build(p1))
+g2 <- ggplot_gtable(ggplot_build(p2))
+pp <- c(subset(g1$layout, name == "panel", se = t:r))
+g <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, 
+                       pp$l, pp$b, pp$l)
+  
+# axis tweaks
+ia <- which(g2$layout$name == "axis-l")
+ga <- g2$grobs[[ia]]
+ax <- ga$children[[2]]
+ax$widths <- rev(ax$widths)
+ax$grobs <- rev(ax$grobs)
+ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
+g <- gtable_add_cols(g, g2$widths[g2$layout[ia, ]$l], length(g$widths) - 1)
+g <- gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
+  
+# combind legends
+leg1 <- g1$grobs[[which(g1$layout$name == "guide-box")]]
+leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
+  
+g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
+grid.draw(g)
+```
+
+## 异常订单率变化趋势
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+# plot 1
+p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=cnt)) +
+  geom_area(alpha = 0.7, position = 'identity', aes(fill = "创建订单量")) + theme(axis.text.x = element_text(angle = 90), legend.position = "bottom", legend.title = element_blank(), text = element_text('SimSun')) + labs(x = "日期", y = "数量") + scale_y_continuous(labels = comma) + scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d"))
+
+# plot2
+abn_rate <- abn_daily %>%
+  filter(respb_scene == "_\xbb\xe3\xd7\xdc" | abn=="payed") %>%
+  mutate(value=ratio_payed)
+
+rate100 <- abn_rate %>%
+  filter(abn == "abn1-ydnorm") %>%
+  mutate(value=ratio_payed*100)
+rate0.1 <- abn_rate %>%
+  filter(abn == "payed") %>%
+  mutate(value=ratio_payed/10)
+rate1 <- abn_rate %>%
+  filter(abn != "abn1-ydnorm" & abn != "payed") %>%
+  mutate(value=ratio_payed)
+
+abn_scaled_rate <- rbind(rate100, rate0.1, rate1)
+abn_scaled_rate$abn <- droplevels(abn_scaled_rate$abn) # remove unused levels
+levels(abn_scaled_rate$abn) <- c("订单取消_运单异常", "订单取消_运单正常*100",
+                                 "订单正常_运单异常", "订单正常_运单超时",
+                                 "订单取消_无运单", "支付成功率/10")
+  
+p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) + geom_line(aes(y = value, colour = abn)) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + scale_colour_brewer(palette = "Set1") + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA))
+
+# combine 2 plots
+g1 <- ggplot_gtable(ggplot_build(p1))
+g2 <- ggplot_gtable(ggplot_build(p2))
+pp <- c(subset(g1$layout, name == "panel", se = t:r))
+g <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, 
+                       pp$l, pp$b, pp$l)
+  
+# axis tweaks
+ia <- which(g2$layout$name == "axis-l")
+ga <- g2$grobs[[ia]]
+ax <- ga$children[[2]]
+ax$widths <- rev(ax$widths)
+ax$grobs <- rev(ax$grobs)
+ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
+g <- gtable_add_cols(g, g2$widths[g2$layout[ia, ]$l], length(g$widths) - 1)
+g <- gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
+  
+## combind legends
+leg1 <- g1$grobs[[which(g1$layout$name == "guide-box")]]
+leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
+  
+g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
+grid.draw(g)
+```
