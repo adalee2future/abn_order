@@ -40,20 +40,19 @@ decide_up_down <- function(diff.val, updown=ZJ_XJ) {
 }
 
 # read data
-abn_daily <- read.csv("data/0120-b.csv", colClasses=c("Date", "factor", "factor", "factor", "numeric", "numeric", "numeric"))
+abn_daily <- read.xlsx("data/0126-all.xlsx", 1)
+abn_daily <- abn_daily %>%
+  mutate(order_date=as.Date(order_date))
 
-#abn_daily <- read.xlsx("data/0126-all.xlsx", 1)
-#abn_daily <- abn_daily %>%
-#  mutate(order_date=as.Date(order_date))
+# some special date
+today <- max(abn_daily$order_date)
+yesterday <- today -1
+start_date <- today - 30
 ```
 
 ## 总订单量背景趋势
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-today <- tail(abn_daily$order_date, 1)
-yesterday <- today -1
-start_date <- today - 30
-
 abn.30days <- abn_daily %>%
   filter(order_date > start_date & abn %in% c("abnormal", "bookord", "payed", "created")) %>%
   select(order_date, abn, actualcnt)
@@ -96,21 +95,26 @@ abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 * 【异常订单】今日订单量 `r prettyNum(abn.today$abnormal, big.mark=",")`单，占支付订单量`r percent(abn.today$abn_rate)`，比前一天`r decide_up_down(abn_rate.diff.yesterday)``r round(abs(abn_rate.diff.yesterday)*100, digits=2)`个百分 点，<span style="`r text_color(abn_rate.diff.avg, abn_rate.diff.sd)`">`r decide_up_down(abn_rate.diff.avg, GY_DY)`30天内均值`r round((abn_rate.diff.avg)*100,2)`个百分点(`r round(abs(abn_rate.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r percent(abn.30days.summary$mean.abn.rate)`，标准差为 `r percent(abn.30days.summary$sd.abn.rate)`
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-today_overall <- subset(abn_daily, order_date=="2017-01-19" & respb_scene == "_\xbb\xe3\xd7\xdc")
+today_overall <- subset(abn_daily, order_date==today & respb_scene == "_汇总")
 today_overall$abn <- droplevels(today_overall$abn) # remove unused levels
-levels(today_overall$abn) <- c("订单取消_运单异常","订单取消_运单正常","订单正常_运单异常","订单正常_运单超时","订单取消_无运单")
+
+levels(today_overall$abn) <- list("订单取消_运单异常"="abn1",
+                                    "订单取消_运单正常"="abn1-ydnorm",
+                                    "订单正常_运单异常"="abn2",
+                                    "订单正常_运单超时"="abn2-chaoshi",
+                                    "订单取消_无运单"="abn3")
 today_overall$percent <- today_overall$actualcnt / sum(today_overall$actualcnt)
 bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn))+
 geom_bar(width = 1, stat = "identity") + theme(text = element_text(family = 'SimSun'))
 pie <- bp + coord_polar("y", start=0)
 midpoint <- cumsum(rev(today_overall$percent)) - rev(today_overall$percent)/2
-pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent)))
+pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent), digits=1))
 ```
 
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 abn_ratio <- abn_daily  %>%
-  filter(respb_scene == "_\xbb\xe3\xd7\xdc") %>%
+  filter(respb_scene == "_汇总") %>%
   group_by(order_date) %>%
   summarize(abn_ratio=sum(cnt))
 
@@ -139,12 +143,12 @@ abn_cnt <- abn_overall %>%
 
 abn_total_abn_cnt <- rbind(abn_total_cnt, abn_cnt)
 abn_total_abn_cnt$type <- as.factor(abn_total_abn_cnt$type)
-levels(abn_total_abn_cnt$type) <- c("总异常订单量", "创建订单量")
+levels(abn_total_abn_cnt$type) <- list("总异常订单量"="abn", "创建订单量"="created")
 p1 <- ggplot(abn_total_abn_cnt, aes(x=order_date, y=value)) +
   geom_area(alpha = 0.7, position = 'identity', aes(fill = type)) + theme(axis.text.x = element_text(angle = 90), legend.position = "bottom", legend.title = element_blank(), text = element_text('SimSun')) + labs(x = "日期", y = "数量") + scale_y_continuous(labels = comma) + scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d"))
 
 max_y <- ceiling(max(abn_overall$abn_ratio) * 1.15)
-p2 <- ggplot(abn_overall, aes(x=order_date)) + geom_line(aes(y = abn_ratio, colour = "总异常率")) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + scale_colour_brewer(palette = "Set1") + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA)) + ylim(0, max_y) + ylab("aaaa")
+p2 <- ggplot(abn_overall, aes(x=order_date)) + geom_line(aes(y = abn_ratio, colour = "总异常率")) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + scale_colour_brewer(palette = "Set1") + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA)) + ylim(0, max_y)
 
 g1 <- ggplot_gtable(ggplot_build(p1))
 g2 <- ggplot_gtable(ggplot_build(p2))
@@ -174,7 +178,7 @@ grid.draw(g)
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 abn.30days.detail <- abn_daily %>%
-  filter(order_date > start_date & respb_scene == "_\xbb\xe3\xd7\xdc") %>%
+  filter(order_date > start_date & respb_scene == "_汇总") %>%
   select(order_date, abn, cnt)
 
 abn.30days.detail.spread <- spread(abn.30days.detail, abn, cnt)
@@ -187,22 +191,22 @@ abn.30days.detail.summary <- abn.30days.detail.spread %>%
             mean.abn3=mean(abn3), sd.abn3=sd(abn3))
 
 abn.today.detail.actualcnt <- abn_daily %>%
-  filter(order_date == today & respb_scene == "_\xbb\xe3\xd7\xdc") %>%
+  filter(order_date == today & respb_scene == "_汇总") %>%
   select(abn, actualcnt)
 abn.today.detail.actualcnt.spread <- spread(abn.today.detail.actualcnt, abn, actualcnt)
 
 abn.today.detail.cnt <- abn_daily %>%
-  filter(order_date == today & respb_scene == "_\xbb\xe3\xd7\xdc") %>%
+  filter(order_date == today & respb_scene == "_汇总") %>%
   select(abn, cnt)
 abn.today.detail.cnt.spread <- spread(abn.today.detail.cnt, abn, cnt)
 
 abn.yesterday.detail.actualcnt <- abn_daily %>%
-  filter(order_date == yesterday & respb_scene == "_\xbb\xe3\xd7\xdc") %>%
+  filter(order_date == yesterday & respb_scene == "_汇总") %>%
   select(abn, actualcnt)
 abn.yesterday.detail.actualcnt.spread <- spread(abn.yesterday.detail.actualcnt, abn, actualcnt)
 
 abn.yesterday.detail.cnt <- abn_daily %>%
-  filter(order_date == yesterday & respb_scene == "_\xbb\xe3\xd7\xdc") %>%
+  filter(order_date == yesterday & respb_scene == "_汇总") %>%
   select(abn, cnt)
 abn.yesterday.detail.cnt.spread <- spread(abn.yesterday.detail.cnt, abn, cnt)
 
@@ -246,7 +250,7 @@ p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=cnt)) +
 
 # plot2
 abn_rate <- abn_daily %>%
-  filter(respb_scene == "_\xbb\xe3\xd7\xdc" | abn=="payed") %>%
+  filter(respb_scene == "_汇总" | abn=="payed") %>%
   mutate(value=ratio_payed)
 
 rate100 <- abn_rate %>%
@@ -261,9 +265,12 @@ rate1 <- abn_rate %>%
 
 abn_scaled_rate <- rbind(rate100, rate0.1, rate1)
 abn_scaled_rate$abn <- droplevels(abn_scaled_rate$abn) # remove unused levels
-levels(abn_scaled_rate$abn) <- c("订单取消_运单异常", "订单取消_运单正常*100",
-                                 "订单正常_运单异常", "订单正常_运单超时",
-                                 "订单取消_无运单", "支付成功率/10")
+levels(abn_scaled_rate$abn) <- list("订单取消_运单异常"="abn1",
+                                    "订单取消_运单正常*100"="abn1-ydnorm",
+                                    "订单正常_运单异常"="abn2",
+                                    "订单正常_运单超时"="abn2-chaoshi",
+                                    "订单取消_无运单"="abn3",
+                                    "支付成功率/10"="payed")
   
 p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) + geom_line(aes(y = value, colour = abn)) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + scale_colour_brewer(palette = "Set1") + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA))
 
@@ -295,10 +302,9 @@ grid::grid.draw(g)
 ```{r echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 # 商户取消率变化趋势
 # plot2
-library(plyr)
 abn.cancel.rate <- abn_daily %>%
-  filter(startsWith(as.character(respb_scene),"2") & abn != "abn1-ydnorm") %>%
-  mutate(cancel_type=as.factor(paste(abn, respb_scene, sep="-"))) %>%
+  filter(respb_scene %in% c("3-2-2", "3-1-1", "3-1-2") | (abn == "abn1" & respb_scene == "1-2-3")) %>%
+  mutate(cancel_type=as.factor(paste(abn, respb_scene, sep=","))) %>%
   select(order_date, abn, cancel_type, ratio_payed) 
 
 cancel.rate1 <- abn.cancel.rate %>%
@@ -311,7 +317,10 @@ cancel.rate100 <- abn.cancel.rate %>%
   select(order_date, cancel_type, value)
 
 abn.cancel.rate <- rbind(cancel.rate1, cancel.rate100)
-abn.cancel.rate$cancel_type <- revalue(abn.cancel.rate$cancel_type, c("abn1-2001/2/3"="运单接单前T 之内商户取消*100", "abn3-2003/1/1"="商户未接单被系统取消", "abn3-2003/1/2"="商户拒单", "abn3-2003/2/2"="商户确认订单后，运力接单前__取消订单"))
+levels(abn.cancel.rate$cancel_type) <- list("运单接单前T 之内商户取消*100"="abn3,1-2-3",
+                                    "商户未接单被系统取消"="abn3,3-1-1",
+                                    "商户拒单"="abn3,3-1-2",
+                                    "商户确认订单后，运力接单前__取消订单"="abn1,1-2-3")
 
 p2 <- ggplot(abn.cancel.rate, aes(x=order_date,y=value)) + geom_line(aes(y = value, colour = cancel_type)) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + scale_colour_brewer(palette = "Set1") + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA))
 
