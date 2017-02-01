@@ -111,16 +111,19 @@ levels(today_overall$abn) <- list("订单取消_运单异常"="abn1",
 today_overall$percent <- today_overall$actualcnt / sum(today_overall$actualcnt)
 bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn)) +
   geom_bar(width = 1, stat = "identity") +
-  theme(text = element_text(family = 'SimSun'), legend.text=element_text(size=8)) +
+  theme(text = element_text(family = 'SimSun'),
+        legend.text=element_text(size=8),
+        axis.ticks=element_blank()) +
   ggtitle("异常订单占比") +
-  guides(fill=guide_legend(title=NULL))
+  guides(fill=guide_legend(title=NULL)) +
+  labs(x="", y="")
 pie <- bp + coord_polar("y", start=0)
 midpoint <- cumsum(rev(today_overall$percent)) - rev(today_overall$percent)/2
 pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent), digits=1))
 ```
 
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=8}
 abn_ratio <- abn_daily %>%
   filter(respb_scene == "_汇总") %>%
   group_by(order_date) %>%
@@ -260,7 +263,7 @@ abn1.ydnorm.diff.sd <- abn1.ydnorm.diff.avg / abn.30days.detail.summary$sd.abn1_
 * 【订单取消运单异常】:今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1"]], 2)`%，比前一天`r decide_up_down(abn1.diff.yesterday)``r round(abs(abn1.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn1.diff.avg, abn1.diff.sd)`">`r decide_up_down(abn1.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.diff.avg), 2)`个百分点(`r round(abs(abn1.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r round(abn.30days.detail.summary$mean.abn1,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn1, 2)`%
 * 【订单取消运单正常】:今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1-ydnorm"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1-ydnorm"]], 2)`%，比前一天`r decide_up_down(abn1.ydnorm.diff.yesterday)``r round(abs(abn1.ydnorm.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn1.ydnorm.diff.avg, abn1.ydnorm.diff.sd)`">`r decide_up_down(abn1.ydnorm.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.ydnorm.diff.avg), 3)`个百分点(`r round(abs(abn1.ydnorm.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r round(abn.30days.detail.summary$mean.abn1_ydnorm,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn1_ydnorm, 2)`%
 
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
 
 # plot 1
 p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=cnt)) +
@@ -326,7 +329,7 @@ g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, le
 grid::grid.draw(g)
 ```
 
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
 # 商户取消率变化趋势
 # plot2
 abn.cancel.rate <- abn_daily %>%
