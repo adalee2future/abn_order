@@ -1,7 +1,8 @@
 ---
 title: "异常交易监控日报"
 output:
-  html_document: default
+  html_document:
+    css: style.css
   pdf_document:
     latex_engine: xelatex
   word_document: default
@@ -19,7 +20,7 @@ library(dplyr)
 library(tidyr)
 library(xlsx)
 #library(extrafont)
-#font_import(paths="~/Downloads/", prompt=FALSE, pattern="ttf")
+#font_import(paths="~/Downloads/", prompt=FALSE, pattern="Sim")
 
 # fixed value
 ZJ_XJ <- c("增加", "下降")
@@ -99,7 +100,7 @@ abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 * 【预定单】今日订单量 `r prettyNum(abn.today$bookord, big.mark=",")` 单，占支付订单量`r percent(abn.today$book_rate)`，比前一天`r decide_up_down(book_rate.diff.yesterday)``r round(abs(book_rate.diff.yesterday*100), 2)`个百分点，<span style="`r text_color(book_rate.diff.avg, book_rate.diff.sd)`">`r decide_up_down(book_rate.diff.avg, GY_DY)`30天内均值`r round((abs(book_rate.diff.avg))*100, 2)`个百分点(`r round(abs(book_rate.diff.sd), 2)`倍标准差)</span>。30天内均值为 `r percent(abn.30days.summary$mean.book.rate)`，标准差为 `r percent(abn.30days.summary$sd.book.rate)`
 * 【异常订单】今日订单量 `r prettyNum(abn.today$abnormal, big.mark=",")`单，占支付订单量`r percent(abn.today$abn_rate)`，比前一天`r decide_up_down(abn_rate.diff.yesterday)``r round(abs(abn_rate.diff.yesterday)*100, digits=2)`个百分 点，<span style="`r text_color(abn_rate.diff.avg, abn_rate.diff.sd)`">`r decide_up_down(abn_rate.diff.avg, GY_DY)`30天内均值`r round((abn_rate.diff.avg)*100,2)`个百分点(`r round(abs(abn_rate.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r percent(abn.30days.summary$mean.abn.rate)`，标准差为 `r percent(abn.30days.summary$sd.abn.rate)`
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3}
 today_overall <- subset(abn_daily, order_date==today & respb_scene == "_汇总")
 today_overall$abn <- droplevels(today_overall$abn) # remove unused levels
 
@@ -112,14 +113,14 @@ today_overall$percent <- today_overall$actualcnt / sum(today_overall$actualcnt)
 bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn)) +
   geom_bar(width = 1, stat = "identity") +
   theme(text = element_text(family = 'SimSun'),
-        legend.text=element_text(size=8),
         axis.ticks=element_blank()) +
   ggtitle("异常订单占比") +
   guides(fill=guide_legend(title=NULL)) +
   labs(x="", y="")
 pie <- bp + coord_polar("y", start=0)
 midpoint <- cumsum(rev(today_overall$percent)) - rev(today_overall$percent)/2
-pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent), digits=1))
+pie <- pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent), digits=1))
+pie + theme(panel.background = element_blank())
 ```
 
 
@@ -423,10 +424,67 @@ today_abn3_detail <- today_detail %>%
   filter(abn == "abn3") %>%
   mutate(percent=actualcnt/sum(actualcnt), cum_percent=cumsum(actualcnt)/sum(actualcnt))
 
-
+more_detailed_rpt <- function(today_detail) {
+  for (i in 1:nrow(today_detail)){
+    row_data <- today_detail[i, ]
+    ratio_payed.30days <- abn_daily %>%
+      filter(order_date > start_date, abn == row_data$abn, respb_scene == row_data$respb_scene) %>%
+      select(order_date, ratio_payed)
+  
+    ratio_payed.30days.summary <- ratio_payed.30days %>% 
+      group_by(1) %>%
+      summarise(mean.ratio_payed=mean(ratio_payed), sd.ratio_payed=sd(ratio_payed))
+    diff.yesterday <- row_data$ratio_payed - subset(ratio_payed.30days, order_date == yesterday)$ratio_payed
+    diff.mean <- row_data$ratio_payed - ratio_payed.30days.summary$mean.ratio_payed
+    diff.sd <- abs(diff.mean / ratio_payed.30days.summary$sd.ratio_payed)
+  
+    cat("* 【",
+        as.character(row_data$respb_scene_name),
+        "】今日订单量",
+        prettyNum(row_data$actualcnt, big.mark=","),
+        "单，占支付订单量",
+        round(row_data$ratio_payed, 3),
+        "%，比前一天",
+        decide_up_down(diff.yesterday),
+        abs(round(diff.yesterday, 3)),
+        "个百分点，",
+        decide_up_down(diff.mean, GY_DY),
+        "30天内均值",
+        round(diff.mean, 3),
+        "个百分点（",
+        round(diff.sd, 1),
+        "倍标准差）。30天内均值为",
+        round(ratio_payed.30days.summary$mean.ratio_payed, 3),
+        "%，标准差为",
+        round(ratio_payed.30days.summary$sd.ratio_payed, 3),
+        "%\n",
+        sep="")
+  }
+}
 ```
 
-* 【订单取消运单异常】
-* 【订单正常运单超时】
-* 【订单正常运单异常】
-* 【订单取消无运单】
+#### 【订单取消运单异常】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_rpt(today_abn1_detail)
+```
+
+
+#### 【订单正常运单超时】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_rpt(today_abn1.ydnorm_detail)
+```
+
+#### 【订单正常运单异常】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_rpt(today_abn2_detail)
+```
+
+#### 【订单取消无运单】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_rpt(today_abn2.chaoshi_detail)
+```
+

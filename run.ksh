@@ -25,3 +25,4 @@ $HTML_FILE_CONTENT
 --XYZ--
 EOT
 echo "email sent! please check"
+mv 异常交易监控日报$rpt_date.* output/
