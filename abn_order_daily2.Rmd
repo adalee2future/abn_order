@@ -20,7 +20,7 @@ library(dplyr)
 library(tidyr)
 library(xlsx)
 #library(extrafont)
-#font_import(paths="~/Downloads/", prompt=FALSE, pattern="Sim")
+#font_import(paths="~/Downloads/", prompt=FALSE, pattern="SimSun")
 
 # fixed value
 ZJ_XJ <- c("增加", "下降")
@@ -42,8 +42,14 @@ decide_up_down <- function(diff.val, updown=ZJ_XJ) {
   ifelse(diff.val >= 0, updown[1], updown[2])
 }
 
+## format number
+format_number <- function(x, digits=2, has_sign=TRUE) {
+  sign_x <- ifelse(x>0, "+", "")
+  paste0(sign_x, round(x, digits))
+}
+
 # read data
-#abn_daily <- read.xlsx("data/0126-all.xlsx", 1)
+#abn_daily <- read.xlsx("data/0203-all.xlsx", 1)
 #abn_daily <- abn_daily %>%
 #  mutate(order_date=as.Date(order_date))
 load("abn_daily.rda")
@@ -94,11 +100,26 @@ abn_rate.diff.avg <- abn.today$abn_rate-abn.30days.summary$mean.abn.rate
 abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 ```
 
-* 【创建订单量】今日订单量 `r prettyNum(abn.today$created, big.mark=",")` 单，比前一天`r decide_up_down(created.diff.yesterday)` `r prettyNum(abs(created.diff.yesterday), big.mark=",")`单，<span style="`r text_color(created.diff.avg, created.diff.sd)`">`r decide_up_down(created.diff.avg, GY_DY)`30天内均值`r prettyNum(abs(created.diff.avg), big.mark=",")`
-单(`r round(abs(created.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r prettyNum(abn.30days.summary$mean.created, big.mark=",")` ，标准差为 `r prettyNum(round(abn.30days.summary$sd.created), big.mark=",")`。
-* 【支付订单量】今日订单量 `r prettyNum(abn.today$payed, big.mark=",")` 单，占支付订单量`r percent(abn.today$payed_rate ,digits=1)`，比前一天`r decide_up_down(payed_rate.diff.yesterday)``r round((abs(payed_rate.diff.yesterday)) * 100, 2)`个百分 点，<span style="`r text_color(payed_rate.diff.avg, payed_rate.diff.sd)`">`r decide_up_down(payed_rate.diff.avg, GY_DY)`30天内均值`r round((abs(payed_rate.diff.avg))*100, 1)`个百分点(`r round(abs(payed_rate.diff.sd), 2)`倍标准差)</span>。30天内均值为 `r percent(abn.30days.summary$mean.payed.rate)`，标准差为 `r percent(abn.30days.summary$sd.payed.rate)`
-* 【预定单】今日订单量 `r prettyNum(abn.today$bookord, big.mark=",")` 单，占支付订单量`r percent(abn.today$book_rate)`，比前一天`r decide_up_down(book_rate.diff.yesterday)``r round(abs(book_rate.diff.yesterday*100), 2)`个百分点，<span style="`r text_color(book_rate.diff.avg, book_rate.diff.sd)`">`r decide_up_down(book_rate.diff.avg, GY_DY)`30天内均值`r round((abs(book_rate.diff.avg))*100, 2)`个百分点(`r round(abs(book_rate.diff.sd), 2)`倍标准差)</span>。30天内均值为 `r percent(abn.30days.summary$mean.book.rate)`，标准差为 `r percent(abn.30days.summary$sd.book.rate)`
-* 【异常订单】今日订单量 `r prettyNum(abn.today$abnormal, big.mark=",")`单，占支付订单量`r percent(abn.today$abn_rate)`，比前一天`r decide_up_down(abn_rate.diff.yesterday)``r round(abs(abn_rate.diff.yesterday)*100, digits=2)`个百分 点，<span style="`r text_color(abn_rate.diff.avg, abn_rate.diff.sd)`">`r decide_up_down(abn_rate.diff.avg, GY_DY)`30天内均值`r round((abn_rate.diff.avg)*100,2)`个百分点(`r round(abs(abn_rate.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r percent(abn.30days.summary$mean.abn.rate)`，标准差为 `r percent(abn.30days.summary$sd.abn.rate)`
+####【创建订单量】
+
+* 今日订单量 `r prettyNum(abn.today$created, big.mark=",")` 单，比前一天`r decide_up_down(created.diff.yesterday)` `r prettyNum(abs(created.diff.yesterday), big.mark=",")`单，<span style="`r text_color(created.diff.avg, created.diff.sd)`">`r decide_up_down(created.diff.avg, GY_DY)`30天内均值`r prettyNum(abs(created.diff.avg), big.mark=",")`
+单(`r round(abs(created.diff.sd), 1)`倍标准差)</span>。
+* 30天内均值为 `r prettyNum(abn.30days.summary$mean.created, big.mark=",")` ，标准差为 `r prettyNum(round(abn.30days.summary$sd.created), big.mark=",")`。
+
+####【支付订单量】
+
+* 今日订单量 `r prettyNum(abn.today$payed, big.mark=",")` 单，占支付订单量`r percent(abn.today$payed_rate ,digits=1)`，比前一天`r decide_up_down(payed_rate.diff.yesterday)``r round((abs(payed_rate.diff.yesterday)) * 100, 2)`个百分点，<span style="`r text_color(payed_rate.diff.avg, payed_rate.diff.sd)`">`r decide_up_down(payed_rate.diff.avg, GY_DY)`30天内均值`r round((abs(payed_rate.diff.avg))*100, 1)`个百分点(`r round(abs(payed_rate.diff.sd), 2)`倍标准差)</span>。
+* 30天内均值为 `r percent(abn.30days.summary$mean.payed.rate)`，标准差为 `r percent(abn.30days.summary$sd.payed.rate)`
+
+####【预定单】
+
+* 今日订单量 `r prettyNum(abn.today$bookord, big.mark=",")` 单，占支付订单量`r percent(abn.today$book_rate)`，比前一天`r decide_up_down(book_rate.diff.yesterday)``r round(abs(book_rate.diff.yesterday*100), 2)`个百分点，<span style="`r text_color(book_rate.diff.avg, book_rate.diff.sd)`">`r decide_up_down(book_rate.diff.avg, GY_DY)`30天内均值`r round((abs(book_rate.diff.avg))*100, 2)`个百分点(`r round(abs(book_rate.diff.sd), 2)`倍标准差)</span>。
+* 30天内均值为 `r percent(abn.30days.summary$mean.book.rate)`，标准差为 `r percent(abn.30days.summary$sd.book.rate)`
+
+####【异常订单】
+
+* 今日订单量 `r prettyNum(abn.today$abnormal, big.mark=",")`单，占支付订单量`r percent(abn.today$abn_rate)`，比前一天`r decide_up_down(abn_rate.diff.yesterday)``r round(abs(abn_rate.diff.yesterday)*100, digits=2)`个百分 点，<span style="`r text_color(abn_rate.diff.avg, abn_rate.diff.sd)`">`r decide_up_down(abn_rate.diff.avg, GY_DY)`30天内均值`r round((abn_rate.diff.avg)*100,2)`个百分点(`r round(abs(abn_rate.diff.sd), 1)`倍标准差)</span>。
+* 30天内均值为 `r percent(abn.30days.summary$mean.abn.rate)`，标准差为 `r percent(abn.30days.summary$sd.abn.rate)`
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3}
 today_overall <- subset(abn_daily, order_date==today & respb_scene == "_汇总")
@@ -159,7 +180,7 @@ abn_total_abn_cnt <- rbind(abn_total_cnt, abn_cnt)
 abn_total_abn_cnt$type <- as.factor(abn_total_abn_cnt$type)
 levels(abn_total_abn_cnt$type) <- list("总异常订单量"="abn", "创建订单量"="created")
 p1 <- ggplot(abn_total_abn_cnt, aes(x=order_date, y=value)) +
-  geom_area(alpha = 0.7, position = 'identity', aes(fill = type)) +
+  geom_area(alpha = 0.4, position = 'identity', aes(fill = type)) +
   theme(axis.text.x = element_text(angle = 90),
         legend.position = "bottom",
         legend.title = element_blank(),
@@ -258,11 +279,30 @@ abn1.ydnorm.diff.avg <- abn.today.detail.cnt.spread[["abn1-ydnorm"]] - abn.30day
 abn1.ydnorm.diff.sd <- abn1.ydnorm.diff.avg / abn.30days.detail.summary$sd.abn1_ydnorm
 ```
 
-* 【订单正常运单超时】:今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2-chaoshi"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2-chaoshi"]], 2)`%，比前一天`r decide_up_down(abn2.chaoshi.diff.yesterday)``r round(abs(abn2.chaoshi.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn2.chaoshi.diff.avg, abn2.chaoshi.diff.sd)`">`r decide_up_down(abn2.chaoshi.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.chaoshi.diff.avg), 2)`个百分点(`r round(abs(abn2.chaoshi.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r round(abn.30days.detail.summary$mean.abn2_chaoshi,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2_chaoshi, 2)`%
-* 【订单正常运单异常】:今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2"]], 2)`%，比前一天`r decide_up_down(abn2.diff.yesterday)``r round(abs(abn2.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn2.diff.avg, abn2.diff.sd)`">`r decide_up_down(abn2.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.diff.avg), 2)`个百分点(`r round(abs(abn2.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r round(abn.30days.detail.summary$mean.abn2,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2, 2)`%
-* 【订单取消无运单】:今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn3"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn3"]], 2)`%，比前一天`r decide_up_down(abn3.diff.yesterday)``r round(abs(abn3.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn3.diff.avg, abn3.diff.sd)`">`r decide_up_down(abn3.diff.avg, GY_DY)`30天内均值`r round(abs(abn3.diff.avg), 2)`个百分点(`r round(abs(abn3.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r round(abn.30days.detail.summary$mean.abn3,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn3, 2)`%
-* 【订单取消运单异常】:今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1"]], 2)`%，比前一天`r decide_up_down(abn1.diff.yesterday)``r round(abs(abn1.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn1.diff.avg, abn1.diff.sd)`">`r decide_up_down(abn1.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.diff.avg), 2)`个百分点(`r round(abs(abn1.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r round(abn.30days.detail.summary$mean.abn1,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn1, 2)`%
-* 【订单取消运单正常】:今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1-ydnorm"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1-ydnorm"]], 2)`%，比前一天`r decide_up_down(abn1.ydnorm.diff.yesterday)``r round(abs(abn1.ydnorm.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn1.ydnorm.diff.avg, abn1.ydnorm.diff.sd)`">`r decide_up_down(abn1.ydnorm.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.ydnorm.diff.avg), 3)`个百分点(`r round(abs(abn1.ydnorm.diff.sd), 1)`倍标准差)</span>。30天内均值为 `r round(abn.30days.detail.summary$mean.abn1_ydnorm,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn1_ydnorm, 2)`%
+#### 【订单正常运单超时】
+
+* 今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2-chaoshi"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2-chaoshi"]], 2)`%，比前一天`r decide_up_down(abn2.chaoshi.diff.yesterday)``r round(abs(abn2.chaoshi.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn2.chaoshi.diff.avg, abn2.chaoshi.diff.sd)`">`r decide_up_down(abn2.chaoshi.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.chaoshi.diff.avg), 2)`个百分点(`r round(abs(abn2.chaoshi.diff.sd), 1)`倍标准差)</span>。
+* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn2_chaoshi,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2_chaoshi, 2)`%
+
+#### 【订单正常运单异常】
+
+* 今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2"]], 2)`%，比前一天`r decide_up_down(abn2.diff.yesterday)``r round(abs(abn2.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn2.diff.avg, abn2.diff.sd)`">`r decide_up_down(abn2.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.diff.avg), 2)`个百分点(`r round(abs(abn2.diff.sd), 1)`倍标准差)</span>。
+* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn2,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2, 2)`%
+
+#### 【订单取消无运单】
+
+* 今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn3"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn3"]], 2)`%，比前一天`r decide_up_down(abn3.diff.yesterday)``r round(abs(abn3.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn3.diff.avg, abn3.diff.sd)`">`r decide_up_down(abn3.diff.avg, GY_DY)`30天内均值`r round(abs(abn3.diff.avg), 2)`个百分点(`r round(abs(abn3.diff.sd), 1)`倍标准差)</span>。
+* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn3,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn3, 2)`%
+
+#### 【订单取消运单异常】
+
+* 今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1"]], 2)`%，比前一天`r decide_up_down(abn1.diff.yesterday)``r round(abs(abn1.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn1.diff.avg, abn1.diff.sd)`">`r decide_up_down(abn1.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.diff.avg), 2)`个百分点(`r round(abs(abn1.diff.sd), 1)`倍标准差)</span>。
+* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn1,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn1, 2)`%
+
+#### 【订单取消运单正常】
+
+* 今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1-ydnorm"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1-ydnorm"]], 2)`%，比前一天`r decide_up_down(abn1.ydnorm.diff.yesterday)``r round(abs(abn1.ydnorm.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn1.ydnorm.diff.avg, abn1.ydnorm.diff.sd)`">`r decide_up_down(abn1.ydnorm.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.ydnorm.diff.avg), 3)`个百分点(`r round(abs(abn1.ydnorm.diff.sd), 1)`倍标准差)</span>。
+* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn1_ydnorm,2)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn1_ydnorm, 2)`%
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
 
@@ -461,30 +501,64 @@ more_detailed_rpt <- function(today_detail) {
         sep="")
   }
 }
+
+more_detailed_table <- function(today_detail) {
+  cat("|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
+  cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
+  for (i in 1:nrow(today_detail)){
+    row_data <- today_detail[i, ]
+    ratio_payed.30days <- abn_daily %>%
+      filter(order_date > start_date, abn == row_data$abn, respb_scene == row_data$respb_scene) %>%
+      select(order_date, ratio_payed)
+  
+    ratio_payed.30days.summary <- ratio_payed.30days %>% 
+      group_by(1) %>%
+      summarise(mean.ratio_payed=mean(ratio_payed), sd.ratio_payed=sd(ratio_payed))
+    diff.yesterday <- row_data$ratio_payed - subset(ratio_payed.30days, order_date == yesterday)$ratio_payed
+    diff.mean <- row_data$ratio_payed - ratio_payed.30days.summary$mean.ratio_payed
+    diff.sd <- abs(diff.mean / ratio_payed.30days.summary$sd.ratio_payed)
+    
+    # break tables to avoid hiding header
+    if (i %% 14 == 0) {
+      cat("\n|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
+      cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
+    }
+    
+    cat(as.character(row_data$respb_scene_name),
+        prettyNum(row_data$actualcnt, big.mark=","),
+        round(row_data$ratio_payed, 3),
+        format_number(diff.yesterday, 3),
+        format_number(diff.mean, 3),
+        format_number(diff.sd, 1),
+        round(ratio_payed.30days.summary$mean.ratio_payed, 3),
+        round(ratio_payed.30days.summary$sd.ratio_payed, 3),
+        sep="|")
+    cat("\n")
+  }
+}
 ```
 
 #### 【订单取消运单异常】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_rpt(today_abn1_detail)
+more_detailed_table(today_abn1_detail)
 ```
 
 
 #### 【订单正常运单超时】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_rpt(today_abn1.ydnorm_detail)
+more_detailed_table(today_abn1.ydnorm_detail)
 ```
 
 #### 【订单正常运单异常】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_rpt(today_abn2_detail)
+more_detailed_table(today_abn2_detail)
 ```
 
 #### 【订单取消无运单】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_rpt(today_abn2.chaoshi_detail)
+more_detailed_table(today_abn2.chaoshi_detail)
 ```
-

@@ -1,12 +1,12 @@
 #/bin/ksh -eu
-rpt_date=0124
+rpt_date=0203
 sed "s/DATE_MMDD/$rpt_date/g" template.Rmd > 异常交易监控日报$rpt_date.Rmd
 R -e "rmarkdown::render('异常交易监控日报$rpt_date.Rmd', output_format='html_document')"
 HTML_FILE_CONTENT=`cat 异常交易监控日报$rpt_date.html`
 
 sendmail -t <<EOT
 From: adalee.is.here@gmail.com
-To: lili.li@ele.me,jiejun.gao@ele.me
+To: fei.ren@ele.me,jiejun.gao@ele.me,lili.li@ele.me
 Subject: 异常交易监控日报$rpt_date 
 MIME-Version: 1.0
 Content-Type: multipart/related;boundary="XYZ"

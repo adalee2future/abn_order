@@ -1,6 +1,26 @@
 li {
-line-height: 150%;
+	line-height: 150%;
 }
 
-.adaleeishere {
+table {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+th, td {
+	text-align: left;
+	padding: 8px;
+}
+
+td {
+	line-height: 150%;
+}
+
+tr:nth-child(even) {
+	background-color: #f2f2f2
+}
+
+th {
+	background-color: #4CAF50;
+	color: white;
 }
