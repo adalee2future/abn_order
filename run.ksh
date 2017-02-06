@@ -1,28 +1,31 @@
 #/bin/ksh -eu
-rpt_date=0203
+
+# sender and receiver can be any mail in host ele.me
+from=lili.li@ele.me
+to=lili.li@ele.me  #delimiter "," if multiple recipients
+
+if [ $# -eq 0 ];
+  then rpt_date=`date -v -1d '+%m%d'` # This could be only run in mac
+else
+  rpt_date=$1
+fi
+
+echo "rpt_date"
+echo $rpt_date
+
+if [ ! -f data/$rpt_date-all.xlsx ]
+then 
+  echo "Error, data file not exists!"
+  exit -1
+fi
+	
+
+# generate Rmd file
 sed "s/DATE_MMDD/$rpt_date/g" template.Rmd > 异常交易监控日报$rpt_date.Rmd
+# generate report using R
 R -e "rmarkdown::render('异常交易监控日报$rpt_date.Rmd', output_format='html_document')"
-HTML_FILE_CONTENT=`cat 异常交易监控日报$rpt_date.html`
 
-sendmail -t <<EOT
-From: adalee.is.here@gmail.com
-To: fei.ren@ele.me,jiejun.gao@ele.me,lili.li@ele.me
-Subject: 异常交易监控日报$rpt_date 
-MIME-Version: 1.0
-Content-Type: multipart/related;boundary="XYZ"
+# send mail using python
+./sendmail.py $rpt_date $from $to
 
---XYZ
-Content-Type: text/html
-
-<html>
-</html>
-
---XYZ
-Content-Type: text/html
-Content-Disposition: attachment; filename*=UTF-8''%E5%BC%82%E5%B8%B8%E4%BA%A4%E6%98%93%E7%9B%91%E6%8E%A7%E6%97%A5%E6%8A%A5$rpt_date.html
-
-$HTML_FILE_CONTENT
---XYZ--
-EOT
-echo "email sent! please check"
 mv 异常交易监控日报$rpt_date.* output/

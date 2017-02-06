@@ -9,8 +9,6 @@ output:
 ---
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
-setwd("~/projects/abn_order2/")
-
 # import pacakges
 library(ggplot2)
 library(scales)
@@ -49,10 +47,10 @@ format_number <- function(x, digits=2, has_sign=TRUE) {
 }
 
 # read data
-#abn_daily <- read.xlsx("data/0203-all.xlsx", 1)
-#abn_daily <- abn_daily %>%
-#  mutate(order_date=as.Date(order_date))
-load("abn_daily.rda")
+abn_daily <- read.xlsx("data/0203-all.xlsx", 1)
+abn_daily <- abn_daily %>%
+  mutate(order_date=as.Date(order_date))
+#load("abn_daily.rda")
 
 # some special date
 today <- max(abn_daily$order_date)
