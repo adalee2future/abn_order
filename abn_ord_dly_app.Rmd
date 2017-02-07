@@ -65,7 +65,7 @@ more_detailed_table <- function(today_detail) {
       summarise(mean.ratio_payed=mean(ratio_payed), sd.ratio_payed=sd(ratio_payed))
     diff.yesterday <- row_data$ratio_payed - subset(ratio_payed.30days, order_date == yesterday)$ratio_payed
     diff.mean <- row_data$ratio_payed - ratio_payed.30days.summary$mean.ratio_payed
-    diff.sd <- abs(diff.mean / ratio_payed.30days.summary$sd.ratio_payed)
+    diff.sd <- diff.mean / ratio_payed.30days.summary$sd.ratio_payed
     
     # break tables to avoid hiding header
     if (i %% 14 == 0) {
