@@ -47,9 +47,11 @@ format_number <- function(x, digits=2, has_sign=TRUE) {
 }
 
 # read data
-abn_daily <- read.xlsx("data/0203-all.xlsx", 1)
+abn_daily <- read.xlsx("data/0205-all.xlsx", 1)
 abn_daily <- abn_daily %>%
   mutate(order_date=as.Date(order_date))
+
+save(abn_daily, file="abn_daily.rda")
 #load("abn_daily.rda")
 
 # some special date
@@ -100,7 +102,7 @@ abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 
 ####【创建订单量】
 
-* 今日订单量 `r prettyNum(abn.today$created, big.mark=",")` 单，比前一天`r decide_up_down(created.diff.yesterday)` `r prettyNum(abs(created.diff.yesterday), big.mark=",")`单，<span style="`r text_color(created.diff.avg, created.diff.sd)`">`r decide_up_down(created.diff.avg, GY_DY)`30天内均值`r prettyNum(abs(created.diff.avg), big.mark=",")`
+* 今日订单量 `r prettyNum(abn.today$created, big.mark=",")` 单，比前一天`r decide_up_down(created.diff.yesterday)` `r prettyNum(abs(created.diff.yesterday), big.mark=",")`单，<span style="`r text_color(created.diff.avg, created.diff.sd)`">`r decide_up_down(created.diff.avg, GY_DY)`30天内均值`r prettyNum(abs(round(created.diff.avg)), big.mark=",")`
 单(`r round(abs(created.diff.sd), 1)`倍标准差)</span>。
 * 30天内均值为 `r prettyNum(abn.30days.summary$mean.created, big.mark=",")` ，标准差为 `r prettyNum(round(abn.30days.summary$sd.created), big.mark=",")`。
 
@@ -542,8 +544,7 @@ more_detailed_table <- function(today_detail) {
 more_detailed_table(today_abn1_detail)
 ```
 
-
-#### 【订单正常运单超时】
+#### 【订单取消运单正常】
 
 ```{r, results='asis', echo=FALSE}
 more_detailed_table(today_abn1.ydnorm_detail)
@@ -555,8 +556,17 @@ more_detailed_table(today_abn1.ydnorm_detail)
 more_detailed_table(today_abn2_detail)
 ```
 
-#### 【订单取消无运单】
+#### 【订单正常运单超时】
 
 ```{r, results='asis', echo=FALSE}
 more_detailed_table(today_abn2.chaoshi_detail)
 ```
+
+#### 【订单取消无运单】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_table(today_abn3_detail)
+```
+
+
+
