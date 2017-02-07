@@ -1,0 +1,25 @@
+#/bin/ksh -eu
+
+if [ $# -eq 0 ];
+  then rpt_date=`date -v -1d '+%m%d'` # This could be only run in mac
+else
+  rpt_date=$1
+fi
+
+echo "rpt_date"
+echo $rpt_date
+
+file_generated_date=`date -j -v +1d -f "%m%d" $rpt_date +%Y-%m-%d`
+cd ~/projects/abn_order2
+
+if [ -f ~/Downloads/${file_generated_date}-all.xlsx ]
+then 
+  cp ~/Downloads/${file_generated_date}-all.xlsx data/$rpt_date-all.xlsx
+  echo "copied $rpt_date-all.xlsx from Downloads/"
+else
+  echo "File not exists in Downloads/, will check directly from data/"
+fi
+	
+./run.ksh $rpt_date
+
+cd -
