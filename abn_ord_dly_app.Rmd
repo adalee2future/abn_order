@@ -1,0 +1,125 @@
+---
+output:
+  html_document:
+    css: style.css
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
+params:
+    rpt_date: "0206"
+---
+
+---
+title: `r paste0("附：异常类型细分场景明细", params$rpt_date)`
+---
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+# import libraries
+library(dplyr)
+
+# udf
+## format number
+format_number <- function(x, digits=2, has_color=FALSE, has_sign=TRUE) {
+  
+  if ( length(x) == 0 || is.na(x) ) { return("") }
+  
+  sign_x <- if (x > 0 ) {
+    "&uarr;"
+  }else if (x == 0) {
+    ""
+  }else {
+    "&darr;"
+  }
+  
+  color_x <- ""
+  if ( has_color && abs(x) >= 2 ) {
+      color_x <- ifelse(x>0, "style=color:green", "style=color:red")
+  }
+  
+  color_arrow <- ifelse(x>0, "style=color:green", "style=color:red")
+  
+  paste0("<span ",
+         color_x,
+         ">",
+         abs(round(x, digits)),
+         "</span> ",
+         "<span ",
+         color_arrow,
+         ">",
+         sign_x,
+         "</span>")
+}
+
+## generate table
+more_detailed_table <- function(today_detail) {
+  cat("|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
+  cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
+  for (i in 1:nrow(today_detail)){
+    row_data <- today_detail[i, ]
+    ratio_payed.30days <- abn_daily %>%
+      filter(order_date > start_date, abn == row_data$abn, respb_scene == row_data$respb_scene) %>%
+      select(order_date, ratio_payed)
+  
+    ratio_payed.30days.summary <- ratio_payed.30days %>% 
+      group_by(1) %>%
+      summarise(mean.ratio_payed=mean(ratio_payed), sd.ratio_payed=sd(ratio_payed))
+    diff.yesterday <- row_data$ratio_payed - subset(ratio_payed.30days, order_date == yesterday)$ratio_payed
+    diff.mean <- row_data$ratio_payed - ratio_payed.30days.summary$mean.ratio_payed
+    diff.sd <- abs(diff.mean / ratio_payed.30days.summary$sd.ratio_payed)
+    
+    # break tables to avoid hiding header
+    if (i %% 14 == 0) {
+      cat("\n|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
+      cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
+    }
+    
+    cat(as.character(row_data$respb_scene_name),
+        prettyNum(row_data$actualcnt, big.mark=","),
+        round(row_data$ratio_payed, 4),
+        format_number(diff.yesterday, 4),
+        format_number(diff.mean, 4),
+        format_number(diff.sd, 2, has_color=TRUE),
+        round(ratio_payed.30days.summary$mean.ratio_payed, 4),
+        round(ratio_payed.30days.summary$sd.ratio_payed, 4),
+        sep="|")
+    cat("\n")
+  }
+}
+
+# don't show number in scientific form
+options(scipen=999)
+
+# load data
+load("data/detail.rda")
+```
+
+
+#### 【订单取消运单异常】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_table(today_abn1_detail)
+```
+
+#### 【订单取消运单正常】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_table(today_abn1.ydnorm_detail)
+```
+
+#### 【订单正常运单异常】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_table(today_abn2_detail)
+```
+
+#### 【订单正常运单超时】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_table(today_abn2.chaoshi_detail)
+```
+
+#### 【订单取消无运单】
+
+```{r, results='asis', echo=FALSE}
+more_detailed_table(today_abn3_detail)
+```

@@ -7,13 +7,39 @@ table {
 	width: 100%;
 }
 
+
 th, td {
 	text-align: left;
 	padding: 8px;
 }
 
+
 td {
 	line-height: 150%;
+}
+
+thead tr th:first-child,
+tbody tr td:first-child {
+	width: 20em;
+        min-width: 20em;
+        max-width: 20em;
+        word-break: break-all;
+}
+
+tbody tr td:nth-child(2) {
+	text-align: right;
+}
+
+tbody tr td:nth-child(4) {
+	text-align: right;
+}
+
+tbody tr td:nth-child(5) {
+	text-align: right;
+}
+
+tbody tr td:nth-child(6) {
+	text-align: right;
 }
 
 tr:nth-child(even) {
