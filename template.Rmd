@@ -116,7 +116,7 @@ abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 
 ####【异常订单】
 
-* 今日订单量 `r prettyNum(abn.today$abnormal, big.mark=",")`单，占支付订单量`r percent(abn.today$abn_rate)`，比前一天`r decide_up_down(abn_rate.diff.yesterday)``r round(abs(abn_rate.diff.yesterday)*100, digits=2)`个百分 点，<span style="`r text_color(abn_rate.diff.avg, abn_rate.diff.sd)`">`r decide_up_down(abn_rate.diff.avg, GY_DY)`30天内均值`r round((abn_rate.diff.avg)*100,2)`个百分点(`r round(abs(abn_rate.diff.sd), 1)`倍标准差)</span>。
+* 今日订单量 `r prettyNum(abn.today$abnormal, big.mark=",")`单，占支付订单量`r percent(abn.today$abn_rate)`，比前一天`r decide_up_down(abn_rate.diff.yesterday)``r round(abs(abn_rate.diff.yesterday)*100, digits=2)`个百分 点，<span style="`r text_color(abn_rate.diff.avg, abn_rate.diff.sd)`">`r decide_up_down(abn_rate.diff.avg, GY_DY)`30天内均值`r round((abs(abn_rate.diff.avg))*100,2)`个百分点(`r round(abs(abn_rate.diff.sd), 1)`倍标准差)</span>。
 * 30天内均值为 `r percent(abn.30days.summary$mean.abn.rate)`，标准差为 `r percent(abn.30days.summary$sd.abn.rate)`
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3}
