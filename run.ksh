@@ -2,7 +2,7 @@
 
 # sender and receiver can be any mail in host ele.me
 from=lili.li@ele.me
-to=fei.ren@ele.me,jiejun.gao@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,lili.li@ele.me  #delimiter "," if multiple recipients
+to=fei.ren@ele.me,jiejun.gao@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,lili.li@ele.me  #delimiter "," if multiple recipients
 #to=lili.li@ele.me
 
 if [ $# -eq 0 ];

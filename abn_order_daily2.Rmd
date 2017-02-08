@@ -147,8 +147,11 @@ bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn)) +
   labs(x="", y="")
 pie <- bp + coord_polar("y", start=0)
 midpoint <- cumsum(rev(today_overall$percent)) - rev(today_overall$percent)/2
-pie <- pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent), digits=1))
-pie + theme(panel.background = element_blank())
+pie <- pie + 
+  scale_y_continuous(breaks=midpoint, 
+                     labels=percent(rev(today_overall$percent),digits=1)) +
+  theme(panel.background = element_blank())
+pie
 ```
 
 
@@ -222,6 +225,8 @@ leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
   
 g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
 grid::grid.draw(g)
+
+
 ```
 
 ## 异常摘要

@@ -24,27 +24,22 @@ msg['To'] = you
 pprint(dict(msg))
 
 # html attachment 1
+filename=(u"异常交易监控日报%s.html" % rpt_date).encode('utf-8')
 html_text = open("output/abn_ord_dly.%s.html" % rpt_date, "rb").read()
 html = MIMEApplication(html_text)
-html['Content-Disposition'] = "attachment; filename=abn_ord_dly.%s.html" % rpt_date
+html['Content-Disposition'] = "attachment; filename=%s" % filename
 msg.attach(html)
 
-# html attachment 1
+# html attachment 2
+filename=(u"异常类型细分场景明细%s.html" % rpt_date).encode('utf-8')
 html_text2 = open("output/abn_ord_dly_app.%s.html" % rpt_date, "rb").read()
 html = MIMEApplication(html_text2)
-html['Content-Disposition'] = "attachment; filename=abn_ord_dly_app.%s.html" % rpt_date
+html['Content-Disposition'] = "attachment; filename=%s" % filename
 msg.attach(html)
 
 # mail body
 body='''
-
-
-异常交易监控日报：abn_ord_dly.%s.html
-附录（异常类型细分场景明细）：abn_ord_dly_app.%s.html
-
-Best regards,
-Operating Center BI team
-''' % (rpt_date, rpt_date)
+'''
 content = MIMEText(body, 'plain')
 msg.attach(content)
 

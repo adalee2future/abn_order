@@ -9,26 +9,21 @@ table {
 
 
 th, td {
-	text-align: left;
+	text-align: center;
 	padding: 8px;
 }
 
 
 td {
 	line-height: 150%;
+	width: 11%;
 }
 
-thead tr th:first-child,
 tbody tr td:first-child {
-	width: 20em;
-        min-width: 20em;
-        max-width: 20em;
+	width: 23%;
         word-break: break-all;
 }
 
-tbody tr td:nth-child(2) {
-	text-align: right;
-}
 
 tbody tr td:nth-child(4) {
 	text-align: right;
