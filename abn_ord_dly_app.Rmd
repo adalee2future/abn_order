@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "0206"
+    rpt_date: "0207"
 ---
 
 ---
@@ -21,7 +21,7 @@ library(dplyr)
 ## format number
 format_number <- function(x, digits=2, has_color=FALSE, has_sign=TRUE) {
   
-  if ( length(x) == 0 || is.na(x) ) { return("") }
+  if ( length(x) == 0 || is.na(x) ) { return("NA") }
   
   sign_x <- if (x > 0 ) {
     "&uarr;"
@@ -33,10 +33,10 @@ format_number <- function(x, digits=2, has_color=FALSE, has_sign=TRUE) {
   
   color_x <- ""
   if ( has_color && abs(x) >= 2 ) {
-      color_x <- ifelse(x>0, "style=color:green", "style=color:red")
+      color_x <- ifelse(x>0, "style=color:red", "style=color:green")
   }
   
-  color_arrow <- ifelse(x>0, "style=color:green", "style=color:red")
+  color_arrow <- ifelse(x>0, "style=color:red", "style=color:green")
   
   paste0("<span ",
          color_x,

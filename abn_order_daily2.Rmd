@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "0206"
+    rpt_date: "0207"
 ---
 
 ---
@@ -35,9 +35,14 @@ percent <- function(x, digits = 2, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
 }
 ## decide color of some text
-text_color <- function(diff.val, diff.sd) {
-  if (abs(diff.sd) < 2) {""}
-  else {ifelse(diff.val > 0, "color:green", "color:red")}
+text_color <- function(diff.val, diff.sd, reverse=TRUE) {
+  if (abs(diff.sd) < 2) { return("") }
+  
+  if (reverse) {
+    ifelse(diff.val > 0, "color:red", "color:green")
+  } else {
+    ifelse(diff.val > 0, "color:green", "color:red")
+    }
 }
 
 ## decide up or down
@@ -109,18 +114,18 @@ abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 
 ####【创建订单量】
 
-* 今日订单量 `r prettyNum(abn.today$created, big.mark=",")` 单，比前一天`r decide_up_down(created.diff.yesterday)` `r prettyNum(abs(created.diff.yesterday), big.mark=",")`单，<span style="`r text_color(created.diff.avg, created.diff.sd)`">`r decide_up_down(created.diff.avg, GY_DY)`30天内均值`r prettyNum(abs(round(created.diff.avg)), big.mark=",")`
+* 今日订单量 `r prettyNum(abn.today$created, big.mark=",")` 单，比前一天`r decide_up_down(created.diff.yesterday)` `r prettyNum(abs(created.diff.yesterday), big.mark=",")`单，<span style="`r text_color(created.diff.avg, created.diff.sd, reverse=FALSE)`">`r decide_up_down(created.diff.avg, GY_DY)`30天内均值`r prettyNum(abs(round(created.diff.avg)), big.mark=",")`
 单(`r round(abs(created.diff.sd), 2)`倍标准差)</span>。
 * 30天内均值为 `r prettyNum(abn.30days.summary$mean.created, big.mark=",")` ，标准差为 `r prettyNum(round(abn.30days.summary$sd.created), big.mark=",")`。
 
 ####【支付订单量】
 
-* 今日订单量 `r prettyNum(abn.today$payed, big.mark=",")` 单，占创建订单量`r percent(abn.today$payed_rate ,digits=2)`，比前一天`r decide_up_down(payed_rate.diff.yesterday)``r round((abs(payed_rate.diff.yesterday)) * 100, 2)`个百分点，<span style="`r text_color(payed_rate.diff.avg, payed_rate.diff.sd)`">`r decide_up_down(payed_rate.diff.avg, GY_DY)`30天内均值`r round((abs(payed_rate.diff.avg))*100, 1)`个百分点(`r round(abs(payed_rate.diff.sd), 2)`倍标准差)</span>。
+* 今日订单量 `r prettyNum(abn.today$payed, big.mark=",")` 单，占创建订单量`r percent(abn.today$payed_rate ,digits=2)`，比前一天`r decide_up_down(payed_rate.diff.yesterday)``r round((abs(payed_rate.diff.yesterday)) * 100, 2)`个百分点，<span style="`r text_color(payed_rate.diff.avg, payed_rate.diff.sd, reverse=FALSE)`">`r decide_up_down(payed_rate.diff.avg, GY_DY)`30天内均值`r round((abs(payed_rate.diff.avg))*100, 1)`个百分点(`r round(abs(payed_rate.diff.sd), 2)`倍标准差)</span>。
 * 30天内均值为 `r percent(abn.30days.summary$mean.payed.rate)`，标准差为 `r percent(abn.30days.summary$sd.payed.rate)`
 
 ####【预定单】
 
-* 今日订单量 `r prettyNum(abn.today$bookord, big.mark=",")` 单，占支付订单量`r percent(abn.today$book_rate)`，比前一天`r decide_up_down(book_rate.diff.yesterday)``r round(abs(book_rate.diff.yesterday*100), 2)`个百分点，<span style="`r text_color(book_rate.diff.avg, book_rate.diff.sd)`">`r decide_up_down(book_rate.diff.avg, GY_DY)`30天内均值`r round((abs(book_rate.diff.avg))*100, 2)`个百分点(`r round(abs(book_rate.diff.sd), 2)`倍标准差)</span>。
+* 今日订单量 `r prettyNum(abn.today$bookord, big.mark=",")` 单，占支付订单量`r percent(abn.today$book_rate)`，比前一天`r decide_up_down(book_rate.diff.yesterday)``r round(abs(book_rate.diff.yesterday*100), 2)`个百分点，<span style="`r text_color(book_rate.diff.avg, book_rate.diff.sd, reverse=FALSE)`">`r decide_up_down(book_rate.diff.avg, GY_DY)`30天内均值`r round((abs(book_rate.diff.avg))*100, 2)`个百分点(`r round(abs(book_rate.diff.sd), 2)`倍标准差)</span>。
 * 30天内均值为 `r percent(abn.30days.summary$mean.book.rate)`，标准差为 `r percent(abn.30days.summary$sd.book.rate)`
 
 ####【异常订单】
