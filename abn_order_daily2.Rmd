@@ -6,11 +6,12 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "0207"
+    rpt_date: "20170207"
 ---
 
 ---
-title: `r paste0("异常交易监控日报", params$rpt_date)`
+locale: `r Sys.setlocale(locale="zh_CN.UTF-8")`
+title: `r paste0("异常交易监控日报", substr(params$rpt_date, 5, 8))`
 ---
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
@@ -55,7 +56,7 @@ options(scipen=999)
 
 # read data
 rda_file <- paste0("data/abn_daily.", params$rpt_date, ".rda")
-xlsx_file <- paste0("data/", params$rpt_date, "-all.xlsx")
+xlsx_file <- paste0("data/", params$rpt_date, ".xlsx")
 
 if ( file.exists(rda_file) ) {
   load(rda_file)
@@ -333,11 +334,13 @@ abn_rate <- abn_daily %>%
   mutate(value=ratio_payed)
 
 rate100 <- abn_rate %>%
-  filter(abn == "abn1-ydnorm") %>%
+  filter(abn == "abn1-ydnorm" & order_date != today) %>% # today data not correct, so remove it
   mutate(value=ratio_payed*100)
+
 rate0.1 <- abn_rate %>%
   filter(abn == "payed") %>%
   mutate(value=ratio_payed/10)
+
 rate1 <- abn_rate %>%
   filter(abn != "abn1-ydnorm" & abn != "payed") %>%
   mutate(value=ratio_payed)
@@ -350,7 +353,7 @@ levels(abn_scaled_rate$abn) <- list("订单取消_运单异常"="abn1",
                                     "订单正常_运单超时"="abn2-chaoshi",
                                     "订单取消_无运单"="abn3",
                                     "支付成功率/10"="payed")
-  
+
 p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) +
   geom_line(aes(y = value, colour = abn)) +
   scale_linetype(NULL) +
@@ -490,7 +493,7 @@ save(today_abn1_detail,
      abn_daily,
      start_date,
      yesterday,
-     file="data/detail.rda"
+     file=paste0("data/detail.", params$rpt_date, ".rda")
      )
 ```
 

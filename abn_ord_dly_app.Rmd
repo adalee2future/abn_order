@@ -6,11 +6,12 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "0207"
+    rpt_date: "20170207"
 ---
 
 ---
-title: `r paste0("附：异常类型细分场景明细", params$rpt_date)`
+locale: `r Sys.setlocale(locale="zh_CN.UTF-8")`
+title: `r paste0("附：异常类型细分场景明细", substr(params$rpt_date, 5, 8))`
 ---
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
@@ -51,9 +52,13 @@ format_number <- function(x, digits=2, has_color=FALSE, has_sign=TRUE) {
 }
 
 ## generate table
+cat_header <- function() {
+  cat("\n")
+  cat("|细分场景(id)|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
+  cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
+}
 more_detailed_table <- function(today_detail) {
-  cat("|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
-  cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
+  cat_header()
   for (i in 1:nrow(today_detail)){
     row_data <- today_detail[i, ]
     ratio_payed.30days <- abn_daily %>%
@@ -68,12 +73,10 @@ more_detailed_table <- function(today_detail) {
     diff.sd <- diff.mean / ratio_payed.30days.summary$sd.ratio_payed
     
     # break tables to avoid hiding header
-    if (i %% 14 == 0) {
-      cat("\n|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
-      cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
-    }
+    if (i %% 14 == 0) { cat_header() }
     
-    cat(as.character(row_data$respb_scene_name),
+    cat(as.character(row_data$respb_scene),
+        as.character(row_data$respb_scene_name),
         prettyNum(row_data$actualcnt, big.mark=","),
         round(row_data$ratio_payed, 4),
         format_number(diff.yesterday, 4),
@@ -90,7 +93,8 @@ more_detailed_table <- function(today_detail) {
 options(scipen=999)
 
 # load data
-load("data/detail.rda")
+rda_file <- paste0("data/detail.", params$rpt_date, ".rda")
+load(rda_file)
 ```
 
 

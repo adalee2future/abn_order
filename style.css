@@ -16,11 +16,11 @@ th, td {
 
 td {
 	line-height: 150%;
-	width: 11%;
+	width: 10%;
 }
 
-tbody tr td:first-child {
-	width: 23%;
+tbody tr td:nth-child(2) {
+	width: 20%;
         word-break: break-all;
 }
 

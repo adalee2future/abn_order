@@ -1,12 +1,19 @@
 #/bin/ksh -eu
+## ./run.ksh YYYYMMDD
+
+. ~/.profile
+cd ~/projects/abn_order2
+export PATH=/usr/local/bin:$PATH
 
 # sender and receiver can be any mail in host ele.me
 from=lili.li@ele.me
-to=fei.ren@ele.me,jiejun.gao@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,lili.li@ele.me  #delimiter "," if multiple recipients
-#to=lili.li@ele.me
+#to=fei.ren@ele.me,jiejun.gao@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,lili.li@ele.me  #delimiter "," if multiple recipients
+to=lili.li@ele.me
+#to=lili.li@ele.me,jiejun.gao@ele.me
+
 
 if [ $# -eq 0 ];
-  then rpt_date=`date -v -1d '+%m%d'` # This could be only run in mac
+  then rpt_date=`date -v -1d '+%Y%m%d'` # This could be only run in mac
 else
   rpt_date=$1
 fi
@@ -14,7 +21,13 @@ fi
 echo "rpt_date"
 echo $rpt_date
 
-if [ ! -f data/$rpt_date-all.xlsx ]
+# fetch data from email
+mail_date=`date -j -v +1d -f "%Y%m%d" $rpt_date +%Y%m%d`
+echo "mail_date"
+echo $mail_date
+./receivemail.py $mail_date
+
+if [ ! -f data/$rpt_date.xlsx ]
 then 
   echo "Error, data file not exists!"
   exit -1
@@ -42,3 +55,4 @@ mv abn_ord_dly*.$rpt_date.html output/
 # send mail using python
 ./sendmail.py $rpt_date $from $to
 
+echo
