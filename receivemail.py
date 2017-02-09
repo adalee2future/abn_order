@@ -14,6 +14,10 @@ else:
     mail_date = datetime.datetime.strptime(sys.argv[1], "%Y%m%d")
 
 data_date = mail_date - datetime.timedelta(days=1)
+filename = "data/%s.xlsx" % data_date.strftime('%Y%m%d')
+if os.path.isfile(filename):
+    print "Data file already exists, no need to download from mail"
+    exit(0)
 
 M = imaplib.IMAP4("email.ele.me")
 M.login(os.environ['mail_user'], os.environ['mail_passwd'])
@@ -21,6 +25,7 @@ M.select()
 
 print "loop starts in %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 start_time = time.time()
+num = 1
 need_wait = True
 while need_wait:
         
@@ -44,7 +49,6 @@ while need_wait:
 	    mail_filename=xlsx_part.get_filename()
 	    if mail_filename == "%s-all.xlsx" % mail_date.strftime("%Y-%m-%d"):
 	        need_wait = False
-		filename = "data/%s.xlsx" % data_date.strftime('%Y%m%d')
 	        with open(filename, "wb") as f:
 		    f.write(xlsx_part.get_payload(decode=True))
 		    print "file %s downloaded sucessfully!" % mail_filename
