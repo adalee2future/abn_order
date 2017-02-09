@@ -117,7 +117,7 @@ abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 
 * 今日订单量 `r prettyNum(abn.today$created, big.mark=",")` 单，比前一天`r decide_up_down(created.diff.yesterday)` `r prettyNum(abs(created.diff.yesterday), big.mark=",")`单，<span style="`r text_color(created.diff.avg, created.diff.sd, reverse=FALSE)`">`r decide_up_down(created.diff.avg, GY_DY)`30天内均值`r prettyNum(abs(round(created.diff.avg)), big.mark=",")`
 单(`r round(abs(created.diff.sd), 2)`倍标准差)</span>。
-* 30天内均值为 `r prettyNum(abn.30days.summary$mean.created, big.mark=",")` ，标准差为 `r prettyNum(round(abn.30days.summary$sd.created), big.mark=",")`。
+* 30天内均值为 `r prettyNum(abn.30days.summary$mean.created, big.mark=",")` ，标准差为 `r prettyNum(round(abn.30days.summary$sd.created), big.mark=",")`
 
 ####【支付订单量】
 
@@ -165,7 +165,7 @@ pie
 abn_ratio <- abn_daily %>%
   filter(respb_scene == "_汇总") %>%
   group_by(order_date) %>%
-  summarize(abn_ratio=sum(cnt))
+  summarize(abn_ratio=sum(ratio_payed))
 
 abn_payed_ratio <- abn_daily %>%
   filter(abn=="payed") %>%
@@ -173,18 +173,18 @@ abn_payed_ratio <- abn_daily %>%
 
 abn_created_cnt <- abn_daily %>%
   filter(abn=="created") %>%
-  select(order_date, cnt)
+  select(order_date, actualcnt)
 
 temp <-merge(x=abn_ratio, y=abn_payed_ratio)
 abn_overall <- merge(x=temp, y=abn_created_cnt)
 
 abn_overall <- abn_overall %>%
-  mutate(abn_cnt=abn_ratio*cnt*ratio_payed/10000,
+  mutate(abn_cnt=abn_ratio*actualcnt*ratio_payed/10000,
          order_date=as.Date(order_date))
 
 abn_total_cnt <- abn_overall %>%
   mutate(type="created") %>%
-  mutate(value=cnt) %>%
+  mutate(value=actualcnt) %>%
   select(order_date, value, type)
 
 abn_cnt <- abn_overall %>%
@@ -231,8 +231,6 @@ leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
   
 g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
 grid::grid.draw(g)
-
-
 ```
 
 ## 异常摘要
@@ -240,9 +238,9 @@ grid::grid.draw(g)
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 abn.30days.detail <- abn_daily %>%
   filter(order_date > start_date & respb_scene == "_汇总") %>%
-  select(order_date, abn, cnt)
+  select(order_date, abn, ratio_payed)
 
-abn.30days.detail.spread <- spread(abn.30days.detail, abn, cnt)
+abn.30days.detail.spread <- spread(abn.30days.detail, abn, ratio_payed)
 abn.30days.detail.summary <- abn.30days.detail.spread %>%
   group_by(1) %>%
   summarize(mean.abn1=mean(abn1), sd.abn1=sd(abn1),
@@ -268,8 +266,8 @@ abn.yesterday.detail.actualcnt.spread <- spread(abn.yesterday.detail.actualcnt, 
 
 abn.yesterday.detail.cnt <- abn_daily %>%
   filter(order_date == yesterday & respb_scene == "_汇总") %>%
-  select(abn, cnt)
-abn.yesterday.detail.cnt.spread <- spread(abn.yesterday.detail.cnt, abn, cnt)
+  select(abn, ratio_payed)
+abn.yesterday.detail.cnt.spread <- spread(abn.yesterday.detail.cnt, abn, ratio_payed)
 
 # 订单正常运单超时 (abn2-chaoshi)
 abn2.chaoshi.diff.yesterday <- abn.today.detail.cnt.spread[["abn2-chaoshi"]] - abn.yesterday.detail.cnt.spread[["abn2-chaoshi"]]
@@ -296,6 +294,7 @@ abn1.ydnorm.diff.yesterday <- abn.today.detail.cnt.spread[["abn1-ydnorm"]] - abn
 abn1.ydnorm.diff.avg <- abn.today.detail.cnt.spread[["abn1-ydnorm"]] - abn.30days.detail.summary$mean.abn1_ydnorm
 abn1.ydnorm.diff.sd <- abn1.ydnorm.diff.avg / abn.30days.detail.summary$sd.abn1_ydnorm
 ```
+
 
 #### 【订单正常运单超时】
 
@@ -325,7 +324,7 @@ abn1.ydnorm.diff.sd <- abn1.ydnorm.diff.avg / abn.30days.detail.summary$sd.abn1_
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
 
 # plot 1
-p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=cnt)) +
+p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=actualcnt)) +
   geom_area(alpha = 0.4, position = 'identity', aes(fill = "创建订单量")) + theme(axis.text.x = element_text(angle = 90), legend.position = "bottom", legend.title = element_blank(), text = element_text('SimSun'), legend.text=element_text(size=8), plot.margin=unit(c(1,1.2,1.2,1.2),"cm")) + labs(x = "日期", y = "数量") + scale_y_continuous(labels = comma) + scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d"))
 
 # plot2
@@ -448,7 +447,6 @@ leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
 g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
 grid::grid.draw(g)
 ```
-
 
 
 ```{r echo=FALSE}
