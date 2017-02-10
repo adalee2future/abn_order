@@ -1,6 +1,8 @@
 #/bin/ksh -eu
 ## ./run.ksh YYYYMMDD
 
+echo "shell started at `date`"
+START=$(date +%s)
 . ~/.profile
 cd ~/projects/abn_order2
 export PATH=/usr/local/bin:$PATH
@@ -18,13 +20,11 @@ else
   rpt_date=$1
 fi
 
-echo "rpt_date"
-echo $rpt_date
+echo "rpt_date: $rpt_date"
 
 # fetch data from email
 mail_date=`date -j -v +1d -f "%Y%m%d" $rpt_date +%Y%m%d`
-echo "mail_date"
-echo $mail_date
+echo "mail_date: $mail_date"
 ./receivemail.py $mail_date
 
 if [ ! -f data/$rpt_date.xlsx ]
@@ -55,4 +55,7 @@ mv abn_ord_dly*.$rpt_date.html output/
 # send mail using python
 ./sendmail.py $rpt_date $from $to
 
-echo
+echo "shell completed at `date`"
+END=$(date +%s)
+DIFF=$(( $END - $START ))
+echo "It took $DIFF seconds to run this shell"
