@@ -137,7 +137,7 @@ abn_rate.diff.sd <- abn_rate.diff.avg/abn.30days.summary$sd.abn.rate
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3}
 today_overall <- subset(abn_daily, order_date==today & respb_scene == "_汇总")
 today_overall$abn <- droplevels(today_overall$abn) # remove unused levels
-
+today_overall <- today_overall[order(today_overall$abn), ]
 levels(today_overall$abn) <- list("订单取消_运单异常"="abn1",
                                     "订单取消_运单正常"="abn1-ydnorm",
                                     "订单正常_运单异常"="abn2",
@@ -153,11 +153,8 @@ bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn)) +
   labs(x="", y="")
 pie <- bp + coord_polar("y", start=0)
 midpoint <- cumsum(rev(today_overall$percent)) - rev(today_overall$percent)/2
-pie <- pie + 
-  scale_y_continuous(breaks=midpoint, 
-                     labels=percent(rev(today_overall$percent),digits=1)) +
-  theme(panel.background = element_blank())
-pie
+pie <- pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent), digits=1))
+pie + theme(panel.background = element_blank())
 ```
 
 
