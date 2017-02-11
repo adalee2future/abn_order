@@ -1,4 +1,4 @@
-#/bin/ksh -eu
+#/bin/ksh
 
 export PATH=/usr/sbin:$PATH
 cd /Users/ada/projects/abn_order2
