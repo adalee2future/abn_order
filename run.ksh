@@ -1,7 +1,7 @@
 #/bin/ksh -eu
 ## ./run.ksh YYYYMMDD
 
-echo "shell started at `date`"
+echo "shell started at `date +'%Y-%m-%d %H:%M:%S'`"
 START=$(date +%s)
 . ~/.profile
 cd ~/projects/abn_order2
@@ -55,7 +55,8 @@ mv abn_ord_dly*.$rpt_date.html output/
 # send mail using python
 ./sendmail.py $rpt_date $from $to
 
-echo "shell completed at `date`"
+echo "shell completed at `date +'%Y-%m-%d %H:%M:%S'`"
 END=$(date +%s)
 DIFF=$(( $END - $START ))
-echo "It took $DIFF seconds to run this shell"
+echo "It took $DIFF seconds to run run.ksh"
+echo 

@@ -8,6 +8,7 @@ import sys
 import time
 import os
 
+start_time = time.time()
 if len(sys.argv) == 1:
     mail_date = datetime.datetime.now()
 else:
@@ -24,14 +25,16 @@ M.login(os.environ['mail_user'], os.environ['mail_passwd'])
 M.select()
 
 print "loop starts in %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-start_time = time.time()
-num = 1
+max_num = int(open("max_mail.id").read())
 need_wait = True
 while need_wait:
         
     typ, data = M.search(None, 'ALL')
-    max_mail_id = int(open("max_mail.id").read())
-    nums = filter(lambda x: x > max_mail_id, map(int, data[0].split()))
+    nums = map( int, data[0].split() )
+    nums = map(lambda x: x + 1, nums)
+    nums = filter(lambda x: x > max_num, nums)
+    if len(nums) > 1:
+        max_num = max(nums)
     subject = '=?utf-8?q?%s-all?=' %  mail_date.strftime("%Y-%m-%d")
     print "need to find subject:", subject
 	    
@@ -49,14 +52,14 @@ while need_wait:
 	    mail_filename=xlsx_part.get_filename()
 	    if mail_filename == "%s-all.xlsx" % mail_date.strftime("%Y-%m-%d"):
 	        need_wait = False
-	        with open(filename, "wb") as f:
+	        with open(filename, "wb") as f, open("max_mail.id", "w") as g:
 		    f.write(xlsx_part.get_payload(decode=True))
 		    print "file %s downloaded sucessfully!" % mail_filename
+		    g.write("%s\n" % num)
+		    print "write %s to max_mail.id" % num
 		break
+    time.sleep(0.5)
 
-    with open("max_mail.id", "w") as f:
-        f.write("%s\n" % num)
-    time.sleep(0.1)
-print "Seconds took:", time.time() - start_time
 M.close()
 M.logout()
+print "It took %s seconds to run receivemail.py" % (time.time() - start_time)

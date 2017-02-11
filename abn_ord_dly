@@ -1,0 +1,9 @@
+#/bin/ksh -eu
+
+export PATH=/usr/sbin:$PATH
+cd /Users/ada/projects/abn_order2
+log_file=log/`date +\%Y\%m\%d`.log
+echo $log_file
+
+./run.ksh >> $log_file
+./sendlog.py $log_file
