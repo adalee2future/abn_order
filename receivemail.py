@@ -26,23 +26,21 @@ M.select()
 
 print "loop starts in %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 max_num = int(open("max_mail.id").read())
+subject = '=?utf-8?q?%s-all?=' %  mail_date.strftime("%Y-%m-%d")
+print "need to find subject:", subject
 need_wait = True
 while need_wait:
-        
     typ, data = M.search(None, 'ALL')
     nums = map( int, data[0].split() )
-    nums = map(lambda x: x + 1, nums)
     nums = filter(lambda x: x > max_num, nums)
     if len(nums) > 1:
         max_num = max(nums)
-    subject = '=?utf-8?q?%s-all?=' %  mail_date.strftime("%Y-%m-%d")
-    print "need to find subject:", subject
-	    
     for num in nums:
         print "current mail id =", num
 	typ, data = M.fetch(num, '(RFC822)')
 	mail_string = data[0][1]
 	message = email.message_from_string(mail_string)
+	print "subject:", message.get("subject")
 	if message.get("subject") == subject:
 	    # last part is xlsx part
 	    print "mail subject matches!"
