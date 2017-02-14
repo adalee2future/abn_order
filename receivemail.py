@@ -56,7 +56,7 @@ while need_wait:
 		    g.write("%s\n" % num)
 		    print "write %s to max_mail.id" % num
 		break
-    time.sleep(0.5)
+    time.sleep(1)
 
 M.close()
 M.logout()

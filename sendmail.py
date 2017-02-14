@@ -41,7 +41,7 @@ msg.attach(html)
 # mail body
 body='''
 '''
-content = MIMEText(body, 'plain')
+content = MIMEText(body, 'html')
 msg.attach(content)
 
 s = smtplib.SMTP('email.ele.me')

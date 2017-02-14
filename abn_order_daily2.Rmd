@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "20170207"
+    rpt_date: "20170212"
 ---
 
 ---
@@ -153,7 +153,9 @@ bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn)) +
   labs(x="", y="")
 pie <- bp + coord_polar("y", start=0)
 midpoint <- cumsum(rev(today_overall$percent)) - rev(today_overall$percent)/2
-pie <- pie + scale_y_continuous(breaks=midpoint, labels=percent(rev(today_overall$percent), digits=1))
+labels <- percent(rev(today_overall$percent), digits=1)
+labels[4] <- percent(rev(today_overall$percent)[4], digits=2)
+pie <- pie + scale_y_continuous(breaks=midpoint, labels=labels)
 pie + theme(panel.background = element_blank())
 ```
 
@@ -315,7 +317,7 @@ abn1.ydnorm.diff.sd <- abn1.ydnorm.diff.avg / abn.30days.detail.summary$sd.abn1_
 
 #### 【订单取消运单正常】
 
-* 今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1-ydnorm"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1-ydnorm"]], 2)`%，比前一天`r decide_up_down(abn1.ydnorm.diff.yesterday)``r round(abs(abn1.ydnorm.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn1.ydnorm.diff.avg, abn1.ydnorm.diff.sd)`">`r decide_up_down(abn1.ydnorm.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.ydnorm.diff.avg), 2)`个百分点(`r round(abs(abn1.ydnorm.diff.sd), 2)`倍标准差)</span>
+* 今日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn1-ydnorm"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn1-ydnorm"]], 3)`%，比前一天`r decide_up_down(abn1.ydnorm.diff.yesterday)``r round(abs(abn1.ydnorm.diff.yesterday), 3)`个百分点，<span style="`r text_color(abn1.ydnorm.diff.avg, abn1.ydnorm.diff.sd)`">`r decide_up_down(abn1.ydnorm.diff.avg, GY_DY)`30天内均值`r round(abs(abn1.ydnorm.diff.avg), 3)`个百分点(`r round(abs(abn1.ydnorm.diff.sd), 2)`倍标准差)</span>
 * 30天内均值为 `r round(abn.30days.detail.summary$mean.abn1_ydnorm,3)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn1_ydnorm, 3)`%
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
