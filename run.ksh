@@ -1,4 +1,4 @@
-#/bin/ksh -eu
+#!/bin/ksh -eu
 ## ./run.ksh YYYYMMDD
 
 echo "shell started at `date +'%Y-%m-%d %H:%M:%S'`"
@@ -9,7 +9,7 @@ export PATH=/usr/local/bin:$PATH
 
 # sender and receiver can be any mail in host ele.me
 from=lili.li@ele.me
-to=fei.ren@ele.me,jiejun.gao@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,lili.li@ele.me  #delimiter "," if multiple recipients
+to=fei.ren@ele.me,jiejun.gao@ele.me,lili.li@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,xiangfei.ye@ele.me,yue.mao@ele.me  #delimiter "," if multiple recipients
 #to=lili.li@ele.me,jiejun.gao@ele.me
 #to=lili.li@ele.me
 
