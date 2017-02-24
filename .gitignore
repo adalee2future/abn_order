@@ -8,4 +8,6 @@ output/
 test.Rmd test.html test_files
 data_bk/
 log_bk/
+log/
+data/
 *.rda
