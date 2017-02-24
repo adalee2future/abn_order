@@ -34,7 +34,6 @@ then
 fi
 
 # generate report using R
-R -e "rmarkdown::render('abn_order_daily2.Rmd', output_format='html_document')"
 R --no-save << EOT
 rmarkdown::render('abn_order_daily2.Rmd',
                   output_format='html_document',
