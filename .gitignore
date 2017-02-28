@@ -10,4 +10,6 @@ data_bk/
 log_bk/
 log/
 data/
+abn_order_daily2_files/
 *.rda
+*.html
