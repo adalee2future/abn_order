@@ -5,5 +5,5 @@ cd /Users/ada/projects/abn_order2
 log_file=log/`date +\%Y\%m\%d`.log
 echo $log_file
 
-./run.ksh >> $log_file
+./run.ksh > $log_file 2>&1
 ./sendlog.py $log_file
