@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "20170207"
+    rpt_date: "20170305"
 ---
 
 ---
@@ -57,9 +57,10 @@ cat_header <- function() {
   cat("|细分场景(id)|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
   cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
 }
-more_detailed_table <- function(today_detail) {
-  cat_header()
+more_detail_table <- function(today_detail) {
+  detail_table <- data.frame()
   for (i in 1:nrow(today_detail)){
+    
     row_data <- today_detail[i, ]
     ratio_payed.30days <- abn_daily %>%
       filter(order_date > start_date, abn == row_data$abn, respb_scene == row_data$respb_scene) %>%
@@ -71,19 +72,36 @@ more_detailed_table <- function(today_detail) {
     diff.yesterday <- row_data$ratio_payed - subset(ratio_payed.30days, order_date == yesterday)$ratio_payed
     diff.mean <- row_data$ratio_payed - ratio_payed.30days.summary$mean.ratio_payed
     diff.sd <- diff.mean / ratio_payed.30days.summary$sd.ratio_payed
+    append_data <- data.frame(respb_scene=row_data$respb_scene,
+                              respb_scene_name=row_data$respb_scene_name,
+                              actualcnt=row_data$actualcnt,
+                              ratio_payed=row_data$ratio_payed,
+                              diff.yesterday=ifelse(length(diff.yesterday) == 0, NA, diff.yesterday),
+                              diff.mean=diff.mean,
+                              diff.sd=diff.sd,
+                              mean.ratio_payed=ratio_payed.30days.summary$mean.ratio_payed,
+                              sd.ratio_payed=ratio_payed.30days.summary$sd.ratio_payed)
+    detail_table <- rbind(detail_table, append_data)
     
+  }
+  detail_table
+}
+
+print_table <- function(detail_table) {
+  cat_header()
+  for (i in 1:nrow(detail_table)) {
     # break tables to avoid hiding header
     if (i %% 14 == 0) { cat_header() }
-    
+    row_data <- detail_table[i, ]
     cat(as.character(row_data$respb_scene),
         as.character(row_data$respb_scene_name),
         prettyNum(row_data$actualcnt, big.mark=","),
         round(row_data$ratio_payed, 4),
-        format_number(diff.yesterday, 4),
-        format_number(diff.mean, 4),
-        format_number(diff.sd, 2, has_color=TRUE),
-        round(ratio_payed.30days.summary$mean.ratio_payed, 4),
-        round(ratio_payed.30days.summary$sd.ratio_payed, 4),
+        format_number(row_data$diff.yesterday, 4),
+        format_number(row_data$diff.mean, 4),
+        format_number(row_data$diff.sd, 2, has_color=TRUE),
+        round(row_data$mean.ratio_payed, 4),
+        round(row_data$sd.ratio_payed, 4),
         sep="|")
     cat("\n")
   }
@@ -93,7 +111,7 @@ more_detailed_table <- function(today_detail) {
 options(scipen=999)
 
 # load data
-rda_file <- paste0("data/detail.", params$rpt_date, ".rda")
+rda_file <- paste0("cached/detail.", params$rpt_date, ".rda")
 load(rda_file)
 ```
 
@@ -101,29 +119,66 @@ load(rda_file)
 #### 【订单取消运单异常】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_table(today_abn1_detail)
+abn1_detail_table <- more_detail_table(today_abn1_detail)
+print_table(abn1_detail_table)
 ```
 
 #### 【订单取消运单正常】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_table(today_abn1.ydnorm_detail)
+abn1_ydnorm_detail_table <- more_detail_table(today_abn1.ydnorm_detail)
+print_table(abn1_ydnorm_detail_table)
 ```
 
 #### 【订单正常运单异常】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_table(today_abn2_detail)
+abn2_detail_table <- more_detail_table(today_abn2_detail)
+print_table(abn2_detail_table)
 ```
 
 #### 【订单正常运单超时】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_table(today_abn2.chaoshi_detail)
+abn2_chaoshi_detail_table <- more_detail_table(today_abn2.chaoshi_detail)
+print_table(abn2_chaoshi_detail_table)
 ```
 
 #### 【订单取消无运单】
 
 ```{r, results='asis', echo=FALSE}
-more_detailed_table(today_abn3_detail)
+abn3_detail_table <- more_detail_table(today_abn3_detail)
+print_table(abn3_detail_table)
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+abn1_detail_table$abn <- "订单取消_运单异常"
+abn1_ydnorm_detail_table$abn <- "订单取消_运单正常"
+abn2_detail_table$abn <- "订单正常_运单异常"
+abn2_chaoshi_detail_table$abn <- "订单正常_运单超时"  
+abn3_detail_table$abn <- "订单取消_无运单"
+
+abn_detail_table <- rbind(abn1_detail_table,
+                          abn1_ydnorm_detail_table,
+                          abn3_detail_table)
+abn_detail_table <- abn_detail_table[with(abn_detail_table, order(-actualcnt)),]
+abn_detail_table <- abn_detail_table %>%
+  select(respb_scene, respb_scene_name, actualcnt, ratio_payed, abn, abn) %>%
+  mutate(percent_vs_abn=actualcnt/abn.today$abnormal,
+         cumsum=cumsum(percent_vs_abn))
+
+delivery_abn_detail_table <- rbind(abn2_detail_table,
+                          abn2_chaoshi_detail_table)
+delivery_abn_detail_table <- delivery_abn_detail_table[with(delivery_abn_detail_table, order(-actualcnt)),]
+delivery_abn_detail_table <- delivery_abn_detail_table %>%
+  select(respb_scene, respb_scene_name, actualcnt, ratio_payed, abn, abn) %>%
+  mutate(percent_vs_abn=actualcnt/abn.today$abnormal,
+         cumsum=cumsum(percent_vs_abn))
+
+save(abn_detail_table,
+     delivery_abn_detail_table,
+     abn.today,
+     today_overall,
+     file=paste0("cached/smy.", params$rpt_date, ".rda")
+     )
 ```
