@@ -39,8 +39,7 @@ html['Content-Disposition'] = "attachment; filename=%s" % filename
 msg.attach(html)
 
 # mail body
-body='''
-'''
+body = open("output/abn_ord_dly_smy.%s.html" % rpt_date, "rb").read()
 content = MIMEText(body, 'html')
 msg.attach(content)
 

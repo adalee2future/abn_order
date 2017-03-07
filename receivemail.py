@@ -26,7 +26,7 @@ M.select()
 
 print "loop starts in %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 max_num = int(open("max_mail.id").read())
-subject = '=?utf-8?q?%s-all?=' %  mail_date.strftime("%Y-%m-%d")
+subject = '=?utf-8?q?%s-abn=5Forder=5Fdaily?=' %  mail_date.strftime("%Y-%m-%d")
 print "need to find subject:", subject
 need_wait = True
 while need_wait:
@@ -48,7 +48,8 @@ while need_wait:
 	    for xlsx_part in message.walk():
                 pass
 	    mail_filename=xlsx_part.get_filename()
-	    if mail_filename == "%s-all.xlsx" % mail_date.strftime("%Y-%m-%d"):
+	    print mail_filename
+	    if mail_filename == "%s-abn_order_daily.xlsx" % mail_date.strftime("%Y-%m-%d"):
 	        need_wait = False
 	        with open(filename, "wb") as f, open("max_mail.id", "w") as g:
 		    f.write(xlsx_part.get_payload(decode=True))
