@@ -13,8 +13,13 @@ tr:nth-child(even) {
 	background-color: #f2f2f2
 }
 
-th {
-	background-color: #4CAF50;
+.brown table thead {
+	background-color: #A52A2A;
+	color: white;
+}
+
+.cornflowerblue table thead {
+	background-color: #6495ED;
 	color: white;
 }
 

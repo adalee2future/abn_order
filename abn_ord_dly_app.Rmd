@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "20170305"
+    rpt_date: "20170313"
 ---
 
 ---
@@ -87,7 +87,8 @@ more_detail_table <- function(today_detail) {
   detail_table
 }
 
-print_table <- function(detail_table) {
+print_table <- function(detail_table, header_color) {
+  cat('<div class=',header_color,'>', sep='')
   cat_header()
   for (i in 1:nrow(detail_table)) {
     # break tables to avoid hiding header
@@ -120,35 +121,35 @@ load(rda_file)
 
 ```{r, results='asis', echo=FALSE}
 abn1_detail_table <- more_detail_table(today_abn1_detail)
-print_table(abn1_detail_table)
+print_table(abn1_detail_table, 'brown')
 ```
 
 #### 【订单取消运单正常】
 
 ```{r, results='asis', echo=FALSE}
 abn1_ydnorm_detail_table <- more_detail_table(today_abn1.ydnorm_detail)
-print_table(abn1_ydnorm_detail_table)
+print_table(abn1_ydnorm_detail_table, 'brown')
 ```
 
 #### 【订单正常运单异常】
 
 ```{r, results='asis', echo=FALSE}
 abn2_detail_table <- more_detail_table(today_abn2_detail)
-print_table(abn2_detail_table)
+print_table(abn2_detail_table, 'cornflowerblue')
 ```
 
 #### 【订单正常运单超时】
 
 ```{r, results='asis', echo=FALSE}
 abn2_chaoshi_detail_table <- more_detail_table(today_abn2.chaoshi_detail)
-print_table(abn2_chaoshi_detail_table)
+print_table(abn2_chaoshi_detail_table, 'cornflowerblue')
 ```
 
 #### 【订单取消无运单】
 
 ```{r, results='asis', echo=FALSE}
 abn3_detail_table <- more_detail_table(today_abn3_detail)
-print_table(abn3_detail_table)
+print_table(abn3_detail_table, 'brown')
 ```
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
@@ -171,8 +172,8 @@ delivery_abn_detail_table <- rbind(abn2_detail_table,
                           abn2_chaoshi_detail_table)
 delivery_abn_detail_table <- delivery_abn_detail_table[with(delivery_abn_detail_table, order(-actualcnt)),]
 delivery_abn_detail_table <- delivery_abn_detail_table %>%
-  select(respb_scene, respb_scene_name, actualcnt, ratio_payed, abn, abn) %>%
-  mutate(percent_vs_abn=actualcnt/abn.today$abnormal,
+  select(respb_scene, respb_scene_name, actualcnt, ratio_payed, abn) %>%
+  mutate(percent_vs_abn=actualcnt/abn.today$dlvr_abnormal,
          cumsum=cumsum(percent_vs_abn))
 
 save(abn_detail_table,

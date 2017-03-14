@@ -31,7 +31,7 @@ print "need to find subject:", subject
 need_wait = True
 while need_wait:
     typ, data = M.search(None, 'ALL')
-    nums = map( int, data[0].split() )
+    nums = map( int, data[0].split() )[::-1]
     nums = filter(lambda x: x > max_num, nums)
     if len(nums) > 1:
         max_num = max(nums)
