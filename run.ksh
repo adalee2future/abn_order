@@ -7,10 +7,10 @@ START=$(date +%s)
 cd ~/projects/abn_order2
 export PATH=/usr/local/bin:$PATH
 
-# sender and receiver can be any mail in host ele.me
+# sender and receiver can be any mail in host ele.me if not login
 from=lili.li@ele.me
 to=fei.ren@ele.me,jiejun.gao@ele.me,lili.li@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,xiangfei.ye@ele.me,yue.mao@ele.me,ting.li06@ele.me,ping.he02@ele.me  #delimiter "," if multiple recipients
-to=lili.li@ele.me,jiejun.gao@ele.me
+#to=lili.li@ele.me,jiejun.gao@ele.me
 #to=lili.li@ele.me
 
 

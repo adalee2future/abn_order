@@ -79,15 +79,14 @@ cheat_percent <- (delivery_abn_detail_table %>%
   summarize(percent=sum(percent_vs_abn)))$percent
 ```
 
-* 今日创建订单量<span style=background-color:yellow>`r round(abn.today$created/10000)`万</span>, 支付订单量`r round(abn.today$payed/10000)`万,异常订单量`r round(abn.today$abnormal/10000)`万，低质量订单（运单异常或超时）`r round(abn.today$dlvr_abnormal/10000)`万
-* 订单异常率<span style=background-color:yellow>`r percent(abn.today$abn_rate,1)`</span>，订单低质量率<span style=background-color:yellow>`r percent(abn.today$dlvr_abnormal_rate,1)`</span>
+* 今日创建订单量<span style=background-color:#C0C0C0;color:white>`r round(abn.today$created/10000)`万</span>，支付订单量`r round(abn.today$payed/10000)`万，异常订单量`r round(abn.today$abnormal/10000)`万，低质量订单（运单异常或超时）`r round(abn.today$dlvr_abnormal/10000)`万
+* 订单异常率<span style=background-color:#A52A2A;color:white>`r percent(abn.today$abn_rate,1)`</span>，订单低质量率<span style=background-color:#6495ED;color:white>`r percent(abn.today$dlvr_abnormal_rate,1)`</span>
 
 #### 异常订单
 
-* 6类贡献最多的细分异常占据所有异常`r percent(abn_detail_table[6,]$cumsum,0)`
 * 商户未接单或者拒单仍然对异常贡献最大，占比`r percent(b_cancel_or_reject_rate,0)`
 * 用户取消订单（商户接单前+运力接单前+取餐前），占比`r percent(u_cancel_before_shop_or_ship,0)`
-* 异常贡献最大的6个细分异常见下表
+* 6类贡献最多的细分异常占据所有异常`r percent(abn_detail_table[6,]$cumsum,0)`，详见下表
 
 ```{r, results='asis', echo=FALSE}
 print_table(head(abn_detail_table,6),
@@ -97,8 +96,8 @@ print_table(head(abn_detail_table,6),
 
 #### 低质量订单 （运单取消或者超时）
 
-* 3类贡献最多的细分异常类占据所有异常`r percent(delivery_abn_detail_table[3,]$cumsum,0)`
-* 低质量订单贡献最大的3个细分异常见下表
+* `r delivery_abn_detail_table$respb_scene_name[1]`占比所有低质量订单最大，为`r percent(delivery_abn_detail_table$percent_vs_abn[1],0)`
+* 3类贡献最多的细分异常类占据所有异常`r percent(delivery_abn_detail_table[3,]$cumsum,0)`，详见下表
 
 ```{r, results='asis', echo=FALSE}
 print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量|占比低质量订单|累计占比低质量订单|\n", 'cornflowerblue')
@@ -108,3 +107,13 @@ print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量
 <br/><br/>
 往期日报以及依赖的数据在[这里](http://10.12.194.134:9999/abn_order_daily/)，仅限内网访问
 ```
+
+<br/>
+
+[异常交易监控日报`r substr(params$rpt_date, 5, 8)`](http://10.12.194.134:9999/abn_order_daily/report/abn_ord_dly.`r params$rpt_date`.html)  
+<br/>  
+[异常类型细分场景明细`r substr(params$rpt_date, 5, 8)`](http://10.12.194.134:9999/abn_order_daily/report/abn_ord_dly_app.`r params$rpt_date`.html)  
+
+<br/>
+<div class="foot">
+Powered by [R Markdown](http://rmarkdown.rstudio.com/)&emsp;&emsp;

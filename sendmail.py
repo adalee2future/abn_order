@@ -4,6 +4,7 @@
 # params rpt_date, sender, receiver
 ## for example 0324 lili.li@ele.me lili.li@ele.me,jiejun.gao@ele.me
 import sys
+import os
 from pprint import pprint
 
 # mail imports
@@ -29,14 +30,14 @@ filename=(u"异常交易监控日报%s.html" % rpt_date_md).encode('utf-8')
 html_text = open("output/abn_ord_dly.%s.html" % rpt_date, "rb").read()
 html = MIMEApplication(html_text)
 html['Content-Disposition'] = "attachment; filename=%s" % filename
-msg.attach(html)
+#msg.attach(html)
 
 # html attachment 2
 filename=(u"异常类型细分场景明细%s.html" % rpt_date_md).encode('utf-8')
 html_text2 = open("output/abn_ord_dly_app.%s.html" % rpt_date, "rb").read()
 html = MIMEApplication(html_text2)
 html['Content-Disposition'] = "attachment; filename=%s" % filename
-msg.attach(html)
+#msg.attach(html)
 
 # mail body
 body = open("output/abn_ord_dly_smy.%s.html" % rpt_date, "rb").read()
@@ -44,5 +45,6 @@ content = MIMEText(body, 'html')
 msg.attach(content)
 
 s = smtplib.SMTP('email.ele.me')
+s.login(os.environ['mail_user'], os.environ['mail_passwd'])
 s.sendmail(me, you.split(","), msg.as_string())
 s.quit()

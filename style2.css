@@ -30,3 +30,15 @@ h1.title {
 h2{
     font-size: 24px;
 }
+
+a:link {
+    color: #845f8b;
+}
+
+.foot {
+    font-size: 10px;
+    text-align: right;
+}
+.foot a:link {
+    color: black;
+}

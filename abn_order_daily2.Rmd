@@ -23,6 +23,7 @@ library(grid)
 library(dplyr)
 library(tidyr)
 library(xlsx)
+library(RColorBrewer)
 #library(extrafont)
 #font_import(paths="~/Downloads/", prompt=FALSE, pattern="SimSun")
 
@@ -230,7 +231,7 @@ p1 <- ggplot(abn_total_abn_cnt, aes(x=order_date, y=value)) +
   scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) +
   ggtitle(paste("异常或者低质量订单量（率）趋势", date_range)) +
   scale_fill_manual(breaks=c("创建订单量", "总异常订单量", "低质量订单量"),
-                    values=c("grey", "red", "green"))
+                    values=c("#C0C0C0", "#A52A2A", "#6495ED"))
 
 abn_total_abn_ratio <- rbind(
   (abn_overall %>% 
@@ -242,7 +243,7 @@ abn_total_abn_ratio <- rbind(
 )
 abn_total_abn_ratio$type <- factor(abn_total_abn_ratio$type, levels=c("订单异常率", "订单低质量率"))
 max_y <- ceiling(max(abn_total_abn_ratio$ratio) * 1.15)
-p2 <- ggplot(abn_total_abn_ratio, aes(x=order_date)) + geom_line(aes(y = ratio, colour = type)) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA)) + ylim(0, max_y)
+p2 <- ggplot(abn_total_abn_ratio, aes(x=order_date,y = ratio)) + geom_line(aes(color=type)) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA)) + ylim(0, max_y) +  scale_color_manual(breaks=c("订单异常率", "订单低质量率"),values=c("#A52A2A", "#6495ED"))
 
 g1 <- ggplot_gtable(ggplot_build(p1))
 g2 <- ggplot_gtable(ggplot_build(p2))
@@ -361,7 +362,7 @@ abn5.diff.sd <- abn5.diff.avg / abn.30days.detail.summary$sd.abn5
 
 # plot 1
 p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=actualcnt)) +
-  geom_area(alpha = 0.4, position = 'identity', aes(fill = "创建订单量")) + theme(legend.position = "bottom", legend.title = element_blank(), text = element_text('SimSun'), legend.text=element_text(size=8), plot.margin=unit(c(1,1.2,1.2,1.2),"cm")) + labs(x = "日期", y = "数量") + scale_y_continuous(labels = comma) + scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) + scale_fill_manual(values="gray")
+  geom_area(alpha = 0.4, position = 'identity', aes(fill = "创建订单量")) + theme(legend.position = "bottom", legend.title = element_blank(), text = element_text('SimSun'), legend.text=element_text(size=8), plot.margin=unit(c(1,1.2,1.2,1.2),"cm")) + labs(x = "日期", y = "数量") + scale_y_continuous(labels = comma) + scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) + scale_fill_manual(values="#C0C0C0")
 
 # plot2
 abn_rate <- abn_daily %>%
