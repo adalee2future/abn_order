@@ -9,7 +9,7 @@
 ```
 # 准备，只需第一次
 mkdir data # 用于放下载的数据
-mkdir cached # 用户放数据缓存
+mkdir cached # 用于放数据缓存
 mkdir output # 用于放生成的html文件
 mkdir log # 用于放代码运行日志
 # 跑昨日日报或者某日日报
