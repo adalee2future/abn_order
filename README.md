@@ -12,9 +12,12 @@ mkdir data # 用于放下载的数据
 mkdir cached # 用于放数据缓存
 mkdir output # 用于放生成的html文件
 mkdir log # 用于放代码运行日志
-# 跑昨日日报或者某日日报
+# 跑昨日日报
 ./run.ksh
+# 跑20170315日报
 ./run.ksh 20170315
+# 跑昨日日报并发log
+./abn_ord_dly
 ```
 
 ### 自定义日期，收件人，发件人
