@@ -1,7 +1,7 @@
 .DS_Store
 .Rhistory
 abn_order_daily2_cache/
-.Rdata
+.R*
 异常交易监控日报????.html
 异常交易监控日报????.Rmd
 output/
@@ -13,3 +13,5 @@ data/
 abn_order_daily2_files/
 *.rda
 *.html
+test.*
+web/

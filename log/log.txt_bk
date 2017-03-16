@@ -1,356 +1,0 @@
-rpt_date
-20170207
-
-R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
-Copyright (C) 2016 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin13.4.0 (64-bit)
-
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
-
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
-
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
-
-[Previously saved workspace restored]
-
-> rmarkdown::render('abn_order_daily2.Rmd', output_format='html_document')
-
-
-processing file: abn_order_daily2.Rmd
-  |                                                                         |                                                                 |   0%  |                                                                         |....                                                             |   6%
-   inline R code fragments
-
-  |                                                                         |........                                                         |  12%
-label: unnamed-chunk-1 (with options) 
-List of 3
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
-
-
-Attaching package: 'scales'
-
-The following object is masked _by_ '.GlobalEnv':
-
-    percent
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-Loading required package: rJava
-Loading required package: xlsxjars
-  |                                                                         |...........                                                      |  18%
-  ordinary text without R code
-
-  |                                                                         |...............                                                  |  24%
-label: unnamed-chunk-2 (with options) 
-List of 3
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
-
-  |                                                                         |...................                                              |  29%
-   inline R code fragments
-
-  |                                                                         |.......................                                          |  35%
-label: unnamed-chunk-3 (with options) 
-List of 4
- $ echo      : logi FALSE
- $ warning   : logi FALSE
- $ message   : logi FALSE
- $ fig.height: num 3
-
-  |                                                                         |...........................                                      |  41%
-  ordinary text without R code
-
-  |                                                                         |...............................                                  |  47%
-label: unnamed-chunk-4 (with options) 
-List of 5
- $ echo      : logi FALSE
- $ warning   : logi FALSE
- $ message   : logi FALSE
- $ fig.height: num 4
- $ fig.width : num 8
-
-  |                                                                         |..................................                               |  53%
-  ordinary text without R code
-
-  |                                                                         |......................................                           |  59%
-label: unnamed-chunk-5 (with options) 
-List of 3
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
-
-  |                                                                         |..........................................                       |  65%
-   inline R code fragments
-
-  |                                                                         |..............................................                   |  71%
-label: unnamed-chunk-6 (with options) 
-List of 4
- $ echo     : logi FALSE
- $ warning  : logi FALSE
- $ message  : logi FALSE
- $ fig.width: num 8
-
-  |                                                                         |..................................................               |  76%
-  ordinary text without R code
-
-  |                                                                         |......................................................           |  82%
-label: unnamed-chunk-7 (with options) 
-List of 4
- $ echo     : logi FALSE
- $ warning  : logi FALSE
- $ message  : logi FALSE
- $ fig.width: num 8
-
-  |                                                                         |.........................................................        |  88%
-  ordinary text without R code
-
-  |                                                                         |.............................................................    |  94%
-label: unnamed-chunk-8 (with options) 
-List of 1
- $ echo: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-output file: abn_order_daily2.knit.md
-
-/usr/local/bin/pandoc +RTS -K512m -RTS abn_order_daily2.utf8.md --to html --from markdown+autolink_bare_uris+ascii_identifiers+tex_math_single_backslash --output abn_order_daily2.html --smart --email-obfuscation none --self-contained --standalone --section-divs --template /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --css style.css --variable 'theme:bootstrap' --include-in-header /tmp/RtmpAj7lYB/rmarkdown-str920466f8c5cb.html --mathjax --variable 'mathjax-url:https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' 
-
-Output created: abn_order_daily2.html
-> 
-> 
-
-R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
-Copyright (C) 2016 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin13.4.0 (64-bit)
-
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
-
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
-
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
-
-[Previously saved workspace restored]
-
-> rmarkdown::render('abn_order_daily2.Rmd',
-+                   output_format='html_document',
-+ 		  output_file='abn_ord_dly.20170207.html',
-+ 		  params=list(rpt_date="20170207")
-+ )
-
-
-processing file: abn_order_daily2.Rmd
-  |                                                                         |                                                                 |   0%  |                                                                         |....                                                             |   6%
-   inline R code fragments
-
-  |                                                                         |........                                                         |  12%
-label: unnamed-chunk-1 (with options) 
-List of 3
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
-
-
-Attaching package: 'scales'
-
-The following object is masked _by_ '.GlobalEnv':
-
-    percent
-
-
-Attaching package: 'dplyr'
-
-The following objects are masked from 'package:stats':
-
-    filter, lag
-
-The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union
-
-Loading required package: rJava
-Loading required package: xlsxjars
-  |                                                                         |...........                                                      |  18%
-  ordinary text without R code
-
-  |                                                                         |...............                                                  |  24%
-label: unnamed-chunk-2 (with options) 
-List of 3
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
-
-  |                                                                         |...................                                              |  29%
-   inline R code fragments
-
-  |                                                                         |.......................                                          |  35%
-label: unnamed-chunk-3 (with options) 
-List of 4
- $ echo      : logi FALSE
- $ warning   : logi FALSE
- $ message   : logi FALSE
- $ fig.height: num 3
-
-  |                                                                         |...........................                                      |  41%
-  ordinary text without R code
-
-  |                                                                         |...............................                                  |  47%
-label: unnamed-chunk-4 (with options) 
-List of 5
- $ echo      : logi FALSE
- $ warning   : logi FALSE
- $ message   : logi FALSE
- $ fig.height: num 4
- $ fig.width : num 8
-
-  |                                                                         |..................................                               |  53%
-  ordinary text without R code
-
-  |                                                                         |......................................                           |  59%
-label: unnamed-chunk-5 (with options) 
-List of 3
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
-
-  |                                                                         |..........................................                       |  65%
-   inline R code fragments
-
-  |                                                                         |..............................................                   |  71%
-label: unnamed-chunk-6 (with options) 
-List of 4
- $ echo     : logi FALSE
- $ warning  : logi FALSE
- $ message  : logi FALSE
- $ fig.width: num 8
-
-  |                                                                         |..................................................               |  76%
-  ordinary text without R code
-
-  |                                                                         |......................................................           |  82%
-label: unnamed-chunk-7 (with options) 
-List of 4
- $ echo     : logi FALSE
- $ warning  : logi FALSE
- $ message  : logi FALSE
- $ fig.width: num 8
-
-  |                                                                         |.........................................................        |  88%
-  ordinary text without R code
-
-  |                                                                         |.............................................................    |  94%
-label: unnamed-chunk-8 (with options) 
-List of 1
- $ echo: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-output file: abn_order_daily2.knit.md
-
-/usr/local/bin/pandoc +RTS -K512m -RTS abn_order_daily2.utf8.md --to html --from markdown+autolink_bare_uris+ascii_identifiers+tex_math_single_backslash --output abn_ord_dly.20170207.html --smart --email-obfuscation none --self-contained --standalone --section-divs --template /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --css style.css --variable 'theme:bootstrap' --include-in-header /tmp/RtmpVqtrHI/rmarkdown-str921738fbe216.html --mathjax --variable 'mathjax-url:https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' 
-
-Output created: abn_ord_dly.20170207.html
-> 
-> rmarkdown::render('abn_ord_dly_app.Rmd',
-+                   output_format='html_document',
-+ 		  output_file='abn_ord_dly_app.20170207.html',
-+ 		  params=list(rpt_date="20170207")
-+ )
-
-
-processing file: abn_ord_dly_app.Rmd
-  |                                                                         |                                                                 |   0%  |                                                                         |.....                                                            |   8%
-   inline R code fragments
-
-  |                                                                         |...........                                                      |  17%
-label: unnamed-chunk-1 (with options) 
-List of 3
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
-
-  |                                                                         |................                                                 |  25%
-  ordinary text without R code
-
-  |                                                                         |......................                                           |  33%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ results: chr "asis"
- $ echo   : logi FALSE
-
-  |                                                                         |...........................                                      |  42%
-  ordinary text without R code
-
-  |                                                                         |................................                                 |  50%
-label: unnamed-chunk-3 (with options) 
-List of 2
- $ results: chr "asis"
- $ echo   : logi FALSE
-
-  |                                                                         |......................................                           |  58%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: unnamed-chunk-4 (with options) 
-List of 2
- $ results: chr "asis"
- $ echo   : logi FALSE
-
-  |                                                                         |.................................................                |  75%
-  ordinary text without R code
-
-  |                                                                         |......................................................           |  83%
-label: unnamed-chunk-5 (with options) 
-List of 2
- $ results: chr "asis"
- $ echo   : logi FALSE
-
-  |                                                                         |............................................................     |  92%
-  ordinary text without R code
-
-  |                                                                         |.................................................................| 100%
-label: unnamed-chunk-6 (with options) 
-List of 2
- $ results: chr "asis"
- $ echo   : logi FALSE
-
-
-output file: abn_ord_dly_app.knit.md
-
-/usr/local/bin/pandoc +RTS -K512m -RTS abn_ord_dly_app.utf8.md --to html --from markdown+autolink_bare_uris+ascii_identifiers+tex_math_single_backslash --output abn_ord_dly_app.20170207.html --smart --email-obfuscation none --self-contained --standalone --section-divs --template /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --css style.css --variable 'theme:bootstrap' --include-in-header /tmp/RtmpVqtrHI/rmarkdown-str92172d3a4ad0.html --mathjax --variable 'mathjax-url:https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' 
-
-Output created: abn_ord_dly_app.20170207.html
-> 
-> 
-{'Content-Type': 'multipart/mixed',
- 'From': 'lili.li@ele.me',
- 'MIME-Version': '1.0',
- 'Subject': '\xe5\xbc\x82\xe5\xb8\xb8\xe4\xba\xa4\xe6\x98\x93\xe7\x9b\x91\xe6\x8e\xa7\xe6\x97\xa5\xe6\x8a\xa50207',
- 'To': 'lili.li@ele.me'}
-
