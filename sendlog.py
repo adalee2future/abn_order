@@ -3,6 +3,7 @@
 
 import sys
 from pprint import pprint
+import os
 
 # mail imports
 import smtplib
@@ -11,7 +12,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 log_filename = sys.argv[1]
-me = 'lili.li@ele.me'
+me = os.environ['mail_user']
 you=me
 
 # Create message container - the correct MIME type is multipart/alternative.
