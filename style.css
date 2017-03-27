@@ -50,3 +50,40 @@ tr:nth-child(even) {
 	background-color: #6495ED;
 	color: white;
 }
+
+.forestgreen table thead {
+	background-color: #228B22;
+	color: white;
+}
+
+.orange table thead {
+	background-color: #FFA500;
+	color: white;
+}
+
+.yellow table thead {
+	background-color: #FFFF00;
+	color: white;
+}
+
+.blue table thead {
+	background-color: #0000FF;
+	color: white;
+}
+
+.deepskyblue table thead {
+	background-color: #00BFFF;
+	color: white;
+}
+
+.red table thead {
+	background-color: #FF0000;
+	color: white;
+}
+
+.purple table thead {
+	background-color: #800080;
+	color: white;
+}
+
+
