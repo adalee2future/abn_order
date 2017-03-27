@@ -1,8 +1,4 @@
 ---
-output:
-  html_document:
-    css: style2.css
-  pdf_document: default
 params:
   rpt_date: '20170313'
 ---
@@ -14,11 +10,7 @@ locale: `r Sys.setlocale(locale="zh_CN.UTF-8")`
 ---
 title: 摘要
 output:
-  html_document:
-    css: style.css
-  pdf_document:
-    latex_engine: xelatex
-  word_document: default
+  html_document
 params:
     rpt_date: "20170226"
 ---
@@ -26,6 +18,54 @@ params:
 ---
 locale: `r Sys.setlocale(locale="zh_CN.UTF-8")`
 ---
+
+<style type="text/css">
+li {
+	line-height: 150%;
+}
+
+table {
+	width: 70%;
+	margin-left:auto; 
+	margin-right:auto;
+}
+
+
+tr:nth-child(even) {
+	background-color: #f2f2f2
+}
+
+.brown table thead {
+	background-color: #A52A2A;
+	color: white;
+}
+
+.cornflowerblue table thead {
+	background-color: #6495ED;
+	color: white;
+}
+
+h1.title {
+    font-size: 24px;
+}
+
+h2{
+    font-size: 24px;
+}
+
+a:link {
+    color: #845f8b;
+}
+
+.foot {
+    font-size: 8px;
+    text-align: right;
+}
+.foot a:link {
+    color: black;
+}
+</style>
+
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
@@ -79,7 +119,7 @@ cheat_percent <- (delivery_abn_detail_table %>%
   summarize(percent=sum(percent_vs_abn)))$percent
 ```
 
-* 今日创建订单量<span style=background-color:#C0C0C0;color:white>`r round(abn.today$created/10000)`万</span>，支付订单量`r round(abn.today$payed/10000)`万，异常订单量`r round(abn.today$abnormal/10000)`万，低质量订单（运单异常或超时）`r round(abn.today$dlvr_abnormal/10000)`万
+* 本日创建订单量<span style=background-color:#228B22;color:white>`r round(abn.today$created/10000)`万</span>，支付订单量`r round(abn.today$payed/10000)`万，异常订单量`r round(abn.today$abnormal/10000)`万，低质量订单（运单异常或超时）`r round(abn.today$dlvr_abnormal/10000)`万
 * 订单异常率<span style=background-color:#A52A2A;color:white>`r percent(abn.today$abn_rate,1)`</span>，订单低质量率<span style=background-color:#6495ED;color:white>`r percent(abn.today$dlvr_abnormal_rate,1)`</span>
 
 #### 异常订单
@@ -97,7 +137,7 @@ print_table(head(abn_detail_table,6),
 #### 低质量订单 （运单取消或者超时）
 
 * `r delivery_abn_detail_table$respb_scene_name[1]`占比所有低质量订单最大，为`r percent(delivery_abn_detail_table$percent_vs_abn[1],0)`
-* 3类贡献最多的细分异常类占据所有异常`r percent(delivery_abn_detail_table[3,]$cumsum,0)`，详见下表
+* 3类贡献最多的细分异常类占比所有低质量订单`r percent(delivery_abn_detail_table[3,]$cumsum,0)`，详见下表
 
 ```{r, results='asis', echo=FALSE}
 print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量|占比低质量订单|累计占比低质量订单|\n", 'cornflowerblue')
@@ -114,6 +154,8 @@ print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量
 <br/>  
 [异常类型细分场景明细`r substr(params$rpt_date, 5, 8)`](http://10.12.194.134:9999/abn_order_daily/report/abn_ord_dly_app.`r params$rpt_date`.html)  
 
+```{r echo=FALSE,eval=FALSE}
 <br/>
 <div class="foot">
-Powered by [R Markdown](http://rmarkdown.rstudio.com/)&emsp;&emsp;
+Powered by [R Markdown](http://rmarkdown.rstudio.com/)&emsp;&emsp;&emsp;&emsp;
+```
