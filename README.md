@@ -8,10 +8,16 @@
 
 ```
 # 准备，只需第一次
+echo 0 > max_mail.id # 设置上次最新邮件id
 mkdir data # 用于放下载的数据
 mkdir cached # 用于放数据缓存
 mkdir output # 用于放生成的html文件
 mkdir log # 用于放代码运行日志
+# 设置邮箱以及密码
+cat << EOF >> ~/.profile
+export mail_user="xxx@ele.me"
+export mail_passwd="xxxxxxx"
+EOF
 # 跑昨日日报
 ./run.ksh
 # 跑20170315日报
