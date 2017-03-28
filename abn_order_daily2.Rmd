@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-  rpt_date: '20170305'
+  rpt_date: '20170327'
 ---
 
 ---
@@ -386,8 +386,8 @@ p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=actualcnt)) 
 
 # plot2
 abn_rate <- abn_daily %>%
-  filter(respb_scene == "_汇总" | abn=="payed") %>%
-  mutate(value=ratio_payed)
+  filter(respb_scene == "_汇总" ) %>%
+  mutate(value=ratio_payed, abn=droplevels(abn)) # remove unused levels
 
 rate100 <- abn_rate %>%
   filter(abn == "abn1-ydnorm" & order_date != today) %>% # today data not correct, so remove it
@@ -397,20 +397,28 @@ rate10 <- abn_rate %>%
   filter(abn=="abn5") %>% # today data not correct, so remove it
   mutate(value=ratio_payed*10)
 
-rate0.1 <- abn_rate %>%
-  filter(abn == "payed") %>%
-  mutate(value=ratio_payed/10)
+#rate0.1 <- abn_rate %>%
+#  filter(abn == "payed") %>%
+#  mutate(value=ratio_payed/10)
 
 rate1 <- abn_rate %>%
   filter(abn %in% c("abn1", "abn3")) %>%
   mutate(value=ratio_payed)
 
 abn_scaled_rate <- rbind(rate100, rate10, rate1)
-abn_scaled_rate$abn <- droplevels(abn_scaled_rate$abn) # remove unused levels
 levels(abn_scaled_rate$abn) <- list("订单取消_运单异常"="abn1",
                                     "订单取消_运单正常*100"="abn1-ydnorm",
                                     "订单取消_无运单"="abn3",
                                     "退单*10"="abn5")
+
+abn_rate_135 <- abn_rate %>%
+  filter(abn %in% c("abn1", "abn1-ydnorm", "abn3", "abn5")) %>%
+  mutate(abn=droplevels(abn), value=value/100)
+
+levels(abn_rate_135$abn) <- list("订单取消_运单异常"="abn1",
+                                 "订单取消_运单正常"="abn1-ydnorm",
+                                 "订单取消_无运单"="abn3",
+                                 "退单"="abn5")
 
 p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) +
   geom_line(aes(y = value, colour = abn)) +
@@ -418,20 +426,43 @@ p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) +
   scale_color_manual(breaks=c("订单取消_运单异常",
                               "订单取消_运单正常*100",
                               "订单取消_无运单",
-                              "退单*10",
-                              "支付成功率/10"),
+                              "退单*10"),
                      values=c(abn1_color,
                               abn1_ydnorm_color,
                               abn3_color,
-                              abn5_color,
-                              '#2F4F4F')) +
-  
+                              abn5_color)) +
   theme(legend.title = element_blank(), text = element_text('SimSun'),
         legend.text=element_text(size=8),
         legend.position = "bottom", panel.grid.major= element_blank(),
         panel.grid.minor = element_blank()) %+replace% 
   theme(panel.background = element_rect(fill = NA),
         plot.margin=unit(c(1,1.2,1.2,1.2),"cm"))
+base_breaks <- function(n = 10){
+    function(x) {
+        axisTicks(log10(range(x, na.rm = TRUE)), log = TRUE, n = n)
+    }
+}
+p2 <- ggplot(abn_rate_135, aes(x=order_date,y=value)) +
+  geom_line(aes(y = value, colour = abn)) +
+  scale_linetype(NULL) +
+  scale_color_manual(breaks=c("订单取消_运单异常",
+                              "订单取消_运单正常",
+                              "订单取消_无运单",
+                              "退单"),
+                     values=c(abn1_color,
+                              abn1_ydnorm_color,
+                              abn3_color,
+                              abn5_color)) +
+  theme(legend.title = element_blank(), text = element_text('SimSun'),
+        legend.text=element_text(size=8),
+        legend.position = "bottom", panel.grid.major= element_blank(),
+        panel.grid.minor = element_blank()) %+replace% 
+  theme(panel.background = element_rect(fill = NA),
+        plot.margin=unit(c(1,1.2,1.2,1.2),"cm")) +
+  scale_y_continuous(trans="log10", breaks = base_breaks(), labels=function(x){percent(x,digits=3)})
+  
+
+
   
 # combine 2 plots
 g1 <- ggplot_gtable(ggplot_build(p1 + ggtitle(paste("异常订单率变化趋势", date_range))))
