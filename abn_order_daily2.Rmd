@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-  rpt_date: '20170327'
+  rpt_date: '20170329'
 ---
 
 ---
@@ -22,7 +22,7 @@ library(gtable)
 library(grid)
 library(dplyr)
 library(tidyr)
-library(xlsx)
+#library(xlsx)
 library(RColorBrewer)
 
 # fixed value
@@ -64,17 +64,18 @@ options(scipen=999)
 
 # read data
 rda_file <- paste0("cached/abn_daily.", params$rpt_date, ".rda")
-xlsx_file <- paste0("data/", params$rpt_date, ".xlsx")
+#xlsx_file <- paste0("data/", params$rpt_date, ".xlsx")
+csv_file <- paste0("data/", params$rpt_date, ".csv")
 
 if ( file.exists(rda_file) ) {
   load(rda_file)
 }else {
-  abn_daily <- read.xlsx(xlsx_file, 1)
+  #abn_daily <- read.xlsx(xlsx_file, 1)
+  abn_daily <- read.csv(csv_file)
   abn_daily <- abn_daily %>%
     mutate(order_date=as.Date(order_date))
   save(abn_daily, file=rda_file)
 }
-
 # some special date
 today <- max(abn_daily$order_date)
 yesterday <- today -1

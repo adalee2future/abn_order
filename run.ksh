@@ -9,8 +9,9 @@ export PATH=/usr/local/bin:$PATH
 
 # sender and receiver can be any mail in host ele.me if not login
 from=$mail_user
-to=fei.ren@ele.me,jiejun.gao@ele.me,lili.li@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,xiangfei.ye@ele.me,yue.mao@ele.me,ting.li06@ele.me,ping.he02@ele.me,lu.zhang11@ele.me,dongxue.mu@ele.me  #delimiter "," if multiple recipients
-#to=$mail_user
+if [ -z ${to+x} ]
+  then to=$mail_user
+fi
 
 
 if [ $# -eq 0 ];
@@ -31,6 +32,9 @@ then
   echo "Error, data file not exists!"
   exit -1
 fi
+
+# convert xlsx to csv
+./xlsx2csv.py $mail_date
 
 # generate report using R
 R --no-save << EOT
