@@ -3,6 +3,7 @@
 export PATH=/usr/sbin:$PATH
 export to=fei.ren@ele.me,jiejun.gao@ele.me,lili.li@ele.me,ruiqing.zhang@ele.me,fanjing.lv@ele.me,diting.liu@ele.me,minqiu.wang@ele.me,xiangfei.ye@ele.me,yue.mao@ele.me,ting.li06@ele.me,ping.he02@ele.me,lu.zhang11@ele.me,dongxue.mu@ele.me  #delimiter "," if multiple recipients
 
+. ~/.profile
 cd /Users/ada/projects/abn_order2
 
 log_file=log/`date +\%Y\%m\%d`.log
