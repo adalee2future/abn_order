@@ -17,6 +17,7 @@ title: `r paste0("异常交易监控日报", substr(params$rpt_date, 5, 8))`
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 # import pacakges
 library(ggplot2)
+library(plotly)
 library(scales)
 library(gtable)
 library(grid)
@@ -52,7 +53,12 @@ text_color <- function(diff.val, diff.sd, reverse=TRUE) {
     ifelse(diff.val > 0, "color:green", "color:red")
     }
 }
-
+# log base breaks
+base_breaks <- function(n = 10){
+    function(x) {
+        axisTicks(log10(range(x, na.rm = TRUE)), log = TRUE, n = n)
+    }
+}
 
 ## decide up or down
 decide_up_down <- function(diff.val, updown=ZJ_XJ) {
@@ -76,6 +82,8 @@ if ( file.exists(rda_file) ) {
     mutate(order_date=as.Date(order_date))
   save(abn_daily, file=rda_file)
 }
+
+abn_daily <- abn_daily[order(abn_daily$order_date, abn_daily$abn), ]
 
 # some special date
 today <- max(abn_daily$order_date)
@@ -172,7 +180,8 @@ today_overall$percent <- today_overall$actualcnt / sum(today_overall$actualcnt)
 bp<- ggplot(today_overall, aes(x="", y=percent, fill=abn)) +
   geom_bar(width = 1, stat = "identity") +
   theme(text = element_text(family = 'SimSun'),
-        axis.ticks=element_blank()) +
+        axis.ticks=element_blank(),
+        legend.title=element_blank()) +
   ggtitle("异常订单占比") +
   guides(fill=guide_legend(title=NULL)) +
   labs(x="", y="") +
@@ -202,6 +211,7 @@ pie + theme(panel.background = element_blank())
 * 本日订单量 `r prettyNum(abn.today$dlvr_abnormal, big.mark=",")`单，占支付订单量`r percent(abn.today$dlvr_abnormal_rate)`，比前一天`r decide_up_down(dlvr_abnormal_rate.diff.yesterday)``r round(abs(dlvr_abnormal_rate.diff.yesterday)*100, digits=2)`个百分 点，<span style="`r text_color(dlvr_abnormal_rate.diff.avg, dlvr_abnormal_rate.diff.sd)`">`r decide_up_down(dlvr_abnormal_rate.diff.avg, GY_DY)`30天内均值`r round((abs(dlvr_abnormal_rate.diff.avg))*100,2)`个百分点(`r round(abs(dlvr_abnormal_rate.diff.sd), 2)`倍标准差)</span>
 * 30天内均值为 `r percent(abn.30days.summary$mean.dlvr_abnormal.rate)`，标准差为 `r percent(abn.30days.summary$sd.dlvr_abnormal.rate)`
 <br><br/>
+
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=8}
 abn_ratio <- abn_daily %>%
   filter(respb_scene == "_汇总" & abn %in% c("abn1", "abn1-ydnorm", "abn3","abn5")) %>%
@@ -252,54 +262,64 @@ levels(abn_total_abn_cnt$type) <- list("创建订单量"="created",
                                        "总异常订单量"="abn",
                                        "低质量订单量"="dlvr_abnormal")
 
-p1 <- ggplot(abn_total_abn_cnt, aes(x=order_date, y=value)) +
-  geom_area(alpha = 0.3, position = 'identity', aes(fill = type)) +
-  theme(
-        legend.position = "bottom",
-        legend.title = element_blank(),
-        text = element_text('SimSun')) +
-  labs(x = "日期", y = "数量") +
-  scale_y_continuous(labels = comma) +
+p1 <- ggplot(abn_total_cnt, aes(x=order_date, y=value, color=type)) +
+  geom_line() +
+  theme(text = element_text('SimSun'), legend.position='none') +
+  labs(x = "日期", y = "订单量") +
   scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) +
-  ggtitle(paste("异常或者低质量订单量（率）趋势", date_range)) +
-  scale_fill_manual(breaks=c("创建订单量", "总异常订单量", "低质量订单量"),
-                    values=c(total_order_color, "#A52A2A", "#6495ED"))
+  ggtitle(paste("总订单量趋势", date_range)) +
+  scale_color_manual(breaks=c("创建订单量", "总异常订单量", "低质量订单量"),
+                    values=c(total_order_color, "#A52A2A", "#6495ED")) 
+  
 
-abn_total_abn_ratio <- rbind(
-  (abn_overall %>% 
-     mutate(type="订单异常率", ratio=abn_ratio) %>%
-     select(order_date, ratio, type)),
-  (abn_overall %>% 
-     mutate(type="订单低质量率", ratio=dlvr_abnormal_ratio) %>%
-     select(order_date, ratio, type))
-)
+p1 <- plotly_build(p1)
+p1$x$data[[1]]$text <-
+  apply(abn_total_cnt, 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>创建订单量: ", prettyNum(item[2], big.mark = ","))
+          }
+        )
+p1
+
+```
+<br/>
+```{r echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+abn_total_abn_abn_ratio <- abn_overall %>% 
+  mutate(type="订单异常率", ratio=abn_ratio) %>%
+  select(order_date, ratio, type)
+
+abn_total_abn_delivery_ratio <- abn_overall %>% 
+  mutate(type="订单低质量率", ratio=dlvr_abnormal_ratio) %>%
+  select(order_date, ratio, type)
+
+abn_total_abn_ratio <- rbind(abn_total_abn_abn_ratio, abn_total_abn_delivery_ratio)
 abn_total_abn_ratio$type <- factor(abn_total_abn_ratio$type, levels=c("订单异常率", "订单低质量率"))
 max_y <- ceiling(max(abn_total_abn_ratio$ratio) * 1.15)
-p2 <- ggplot(abn_total_abn_ratio, aes(x=order_date,y = ratio)) + geom_line(aes(color=type)) + theme(text = element_text(family = 'SimSun')) + scale_linetype(NULL) + theme(legend.title = element_blank(), text = element_text('SimSun'), legend.position = "bottom", panel.grid.major= element_blank(), panel.grid.minor = element_blank())%+replace% theme(panel.background = element_rect(fill = NA)) + ylim(0, max_y) +  scale_color_manual(breaks=c("订单异常率", "订单低质量率"),values=c("#A52A2A", "#6495ED"))
+p2 <- ggplot(abn_total_abn_ratio, aes(x=order_date, y=ratio, color=type)) +
+  geom_line() +
+  theme(text = element_text('SimSun'), legend.title=element_blank()) +
+  labs(x = "日期", y = "百分率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) +
+  ggtitle(paste("订单异常或低质量率趋势", date_range)) +
+  scale_color_manual(breaks=c("订单异常率", "订单低质量率"),
+                    values=c("#A52A2A", "#6495ED"))
+```
 
-g1 <- ggplot_gtable(ggplot_build(p1))
-g2 <- ggplot_gtable(ggplot_build(p2))
-pp <- c(subset(g1$layout, name == "panel", se = t:r))
-g <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, 
-                       pp$l, pp$b, pp$l)
-  
-# axis tweaks
-ia <- which(g2$layout$name == "axis-l")
-ga <- g2$grobs[[ia]]
-ax <- ga$children[[2]]
-ax$widths <- rev(ax$widths)
-ax$grobs <- rev(ax$grobs)
-ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
-g <- gtable_add_cols(g, g2$widths[g2$layout[ia, ]$l], length(g$widths) - 1)
-g <- gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
-  
-# combind legends
-leg1 <- g1$grobs[[which(g1$layout$name == "guide-box")]]
-leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
-  
-g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
-grid::grid.draw(g)
-
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=8}
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn_total_abn_abn_ratio, 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>订单异常率: ", round(as.double(item[2]),2), "%")
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn_total_abn_delivery_ratio, 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>订单低质量率: ", round(as.double(item[2]),2), "%")
+          }
+        )
+p2
 ```
 
 ## 异常摘要
@@ -390,7 +410,7 @@ abn5.diff.sd <- abn5.diff.avg / abn.30days.detail.summary$sd.abn5
 * 本日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn5"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn5"]], 2)`%，比前一天`r decide_up_down(abn5.diff.yesterday)``r round(abs(abn5.diff.yesterday), 2)`个百分点，<span style="`r text_color(abn5.diff.avg, abn5.diff.sd)`">`r decide_up_down(abn5.diff.avg, GY_DY)`30天内均值`r round(abs(abn5.diff.avg), 2)`个百分点(`r round(abs(abn5.diff.sd), 2)`倍标准差)</span>
 * 30天内均值为 `r round(abn.30days.detail.summary$mean.abn5,3)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn5, 3)`%
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
 
 # plot 1
 p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=actualcnt)) +
@@ -400,104 +420,61 @@ p1 <- ggplot(subset(abn_daily, abn=="created"), aes(x=order_date, y=actualcnt)) 
 abn_rate <- abn_daily %>%
   filter(respb_scene == "_汇总") %>%
   mutate(value=ratio_payed, abn=droplevels(abn)) # remove unused levels
-rate100 <- abn_rate %>%
-  filter(abn == "abn1-ydnorm" & order_date != today) %>% # today data not correct, so remove it
-  mutate(value=ratio_payed*100)
-
-rate10 <- abn_rate %>%
-  filter(abn=="abn5") %>% # today data not correct, so remove it
-  mutate(value=ratio_payed*10)
-
-#rate0.1 <- abn_rate %>%
-#  filter(abn == "payed") %>%
-#  mutate(value=ratio_payed/10)
-
-rate1 <- abn_rate %>%
-  filter(abn %in% c("abn1", "abn3")) %>%
-  mutate(value=ratio_payed)
-
-abn_scaled_rate <- rbind(rate100, rate10, rate1)
-levels(abn_scaled_rate$abn) <- list("订单取消_运单异常"="abn1",
-                                    "订单取消_运单正常*100"="abn1-ydnorm",
-                                    "订单取消_无运单"="abn3",
-                                    "退单*10"="abn5")
 
 abn_rate_135 <- abn_rate %>%
   filter(abn %in% c("abn1", "abn1-ydnorm", "abn3", "abn5")) %>%
   mutate(abn=droplevels(abn), value=value/100)
 
-levels(abn_rate_135$abn) <- list("订单取消_运单异常"="abn1",
-                                 "订单取消_运单正常"="abn1-ydnorm",
-                                 "订单取消_无运单"="abn3",
-                                 "退单"="abn5")
-
-p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) +
-  geom_line(aes(y = value, colour = abn)) +
-  scale_linetype(NULL) +
-  scale_color_manual(breaks=c("订单取消_运单异常",
-                              "订单取消_运单正常*100",
-                              "订单取消_无运单",
-                              "退单*10"),
-                     values=c(abn1_color,
-                              abn1_ydnorm_color,
-                              abn3_color,
-                              abn5_color)) +
-  theme(legend.title = element_blank(), text = element_text('SimSun'),
-        legend.text=element_text(size=8),
-        legend.position = "bottom", panel.grid.major= element_blank(),
-        panel.grid.minor = element_blank()) %+replace% 
-  theme(panel.background = element_rect(fill = NA),
-        plot.margin=unit(c(1,1.2,1.2,1.2),"cm"))
-base_breaks <- function(n = 10){
-    function(x) {
-        axisTicks(log10(range(x, na.rm = TRUE)), log = TRUE, n = n)
-    }
-}
+levels(abn_rate_135$abn) <- list("订单取消_无运单"="abn3",
+                                 "订单取消_运单异常"="abn1",
+                                 "退单"="abn5",
+                                 "订单取消_运单正常"="abn1-ydnorm")
+abn_rate_135 <- abn_rate_135[order(abn_rate_135$order_date), ]
 p2 <- ggplot(abn_rate_135, aes(x=order_date,y=value)) +
   geom_line(aes(y = value, colour = abn)) +
-  scale_linetype(NULL) +
-  scale_color_manual(breaks=c("订单取消_运单异常",
-                              "订单取消_运单正常",
-                              "订单取消_无运单",
-                              "退单"),
-                     values=c(abn1_color,
-                              abn1_ydnorm_color,
-                              abn3_color,
-                              abn5_color)) +
-  theme(legend.title = element_blank(), text = element_text('SimSun'),
+  ggtitle(paste("异常订单率变化趋势", date_range)) +
+  scale_color_manual(breaks=c("订单取消_无运单",
+                              "订单取消_运单异常",
+                              "退单",
+                              "订单取消_运单正常"),
+                     values=c(abn3_color,
+                              abn1_color,
+                              abn5_color,
+                              abn1_ydnorm_color
+                              )) +
+  theme(text = element_text('SimSun'),
         legend.text=element_text(size=8),
-        legend.position = "bottom", panel.grid.major= element_blank(),
-        panel.grid.minor = element_blank()) %+replace% 
-  theme(panel.background = element_rect(fill = NA),
-        plot.margin=unit(c(1,1.2,1.2,1.2),"cm")) +
-  scale_y_continuous(trans="log10", breaks = base_breaks(), labels=function(x){percent(x,digits=3)})
-  
+        legend.title=element_blank()) +
+  scale_y_continuous(trans="log10", breaks = base_breaks(), labels=function(x){percent(x,digits=3)}) +
+  xlab("日期") + ylab("异常率")
 
 
-  
-# combine 2 plots
-g1 <- ggplot_gtable(ggplot_build(p1 + ggtitle(paste("异常订单率变化趋势", date_range))))
-g2 <- ggplot_gtable(ggplot_build(p2))
-pp <- c(subset(g1$layout, name == "panel", se = t:r))
-g <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, 
-                       pp$l, pp$b, pp$l)
-  
-# axis tweaks
-ia <- which(g2$layout$name == "axis-l")
-ga <- g2$grobs[[ia]]
-ax <- ga$children[[2]]
-ax$widths <- rev(ax$widths)
-ax$grobs <- rev(ax$grobs)
-ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
-g <- gtable_add_cols(g, g2$widths[g2$layout[ia, ]$l], length(g$widths) - 1)
-g <- gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
-  
-## combind legends
-leg1 <- g1$grobs[[which(g1$layout$name == "guide-box")]]
-leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
-  
-g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
-grid::grid.draw(g)
+p2 <- plotly::plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn_rate_135 %>% filter(abn == "订单取消_无运单"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>订单取消_无运单: ", round(as.double(item[7]),4), "%")
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn_rate_135 %>% filter(abn == "订单取消_运单异常"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>订单取消_运单异常: ", round(as.double(item[7]),4), "%")
+          }
+        )
+p2$x$data[[3]]$text <-
+  apply(abn_rate_135 %>% filter(abn == "退单"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>退单: ", round(as.double(item[7]),4), "%")
+          }
+        )
+p2$x$data[[4]]$text <-
+  apply(abn_rate_135 %>% filter(abn == "订单取消_运单正常"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>订单取消_运单正常: ", round(as.double(item[7]),4), "%")
+          }
+        )
+p2
 ```
 
 
@@ -514,7 +491,7 @@ grid::grid.draw(g)
 * 30天内均值为 `r round(abn.30days.detail.summary$mean.abn2,3)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2, 3)`%
 
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
 
 # plot2
 
@@ -524,50 +501,40 @@ rate1 <- abn_rate %>%
 
 abn_scaled_rate <- rate1
 abn_scaled_rate$abn <- droplevels(abn_scaled_rate$abn) # remove unused levels
-levels(abn_scaled_rate$abn) <- list(
-                                    "订单正常_运单异常"="abn2",
-                                    "订单正常_运单超时"="abn2-chaoshi"
+levels(abn_scaled_rate$abn) <- list("订单正常_运单超时"="abn2-chaoshi",
+                                    "订单正常_运单异常"="abn2"
                                     )
-
+abn_scaled_rate <- abn_scaled_rate[order(abn_scaled_rate$order_date), ]
 p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) +
   geom_line(aes(y = value, colour = abn)) +
-  scale_linetype(NULL) +
-  scale_color_manual(breaks=c("订单正常_运单异常", "订单正常_运单超时"),
-                     values=c(abn2_color, abn2_chaoshi_color)) +
-  theme(legend.title = element_blank(), text = element_text('SimSun'),
+  scale_color_manual(breaks=c("订单正常_运单超时", "订单正常_运单异常"),
+                     values=c(abn2_chaoshi_color, abn2_color)) +
+  theme(text = element_text('SimSun'),
         legend.text=element_text(size=8),
-        legend.position = "bottom", panel.grid.major= element_blank(),
-        panel.grid.minor = element_blank()) %+replace% 
-  theme(panel.background = element_rect(fill = NA),
-        plot.margin=unit(c(1,1.2,1.2,1.2),"cm")) + ylim(0, 10)
-# combine 2 plots
-g1 <- ggplot_gtable(ggplot_build(p1 + ggtitle(paste("低质量订单率变化趋势", date_range))))
-g2 <- ggplot_gtable(ggplot_build(p2))
-pp <- c(subset(g1$layout, name == "panel", se = t:r))
-g <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, 
-                       pp$l, pp$b, pp$l)
-  
-# axis tweaks
-ia <- which(g2$layout$name == "axis-l")
-ga <- g2$grobs[[ia]]
-ax <- ga$children[[2]]
-ax$widths <- rev(ax$widths)
-ax$grobs <- rev(ax$grobs)
-ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
-g <- gtable_add_cols(g, g2$widths[g2$layout[ia, ]$l], length(g$widths) - 1)
-g <- gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
-  
-## combind legends
-leg1 <- g1$grobs[[which(g1$layout$name == "guide-box")]]
-leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
-  
-g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
-grid::grid.draw(g)
+        legend.title=element_blank()) +
+  ylim(0, 10) + xlab("日期") + ylab("百分率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) +
+  ggtitle(paste("订单低质量率变化趋势", date_range))
+
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn_scaled_rate %>% filter(abn == "订单正常_运单超时"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>订单正常_运单超时: ", round(as.double(item[7]),2), "%")
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn_scaled_rate %>% filter(abn == "订单正常_运单异常"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>订单正常_运单异常: ", round(as.double(item[7]),2), "%")
+          }
+        )
+p2
 ```
 
 ## 订单商户取消率 (属于异常订单)
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
 # 订单商户取消率变化趋势
 ## 3-1-1	商户未接单系统取消
 ## 3-1-2	商户确认前商户拒单
@@ -578,6 +545,12 @@ abn.shop.cancel.rate <- abn_daily %>%
   mutate(respb_scene=droplevels(respb_scene),
          abn=droplevels(abn),
          respb_scene_name=droplevels(respb_scene_name))
+
+abn.shop.cancel.rate$respb_scene_name <- factor(abn.shop.cancel.rate$respb_scene_name,
+                                                levels=c("商户未接单系统取消",
+                                                         "商户确认前商户拒单",
+                                                         "运力接单前商户取消",
+                                                         "运力接单前T内商户取消"))
 # 30天数据
 abn.shop.cancel.30.days <- abn.shop.cancel.rate %>%
   filter(order_date > start_date) %>%
@@ -663,43 +636,43 @@ diff.sd.123 <- diff.avg.123 / abn.shop.cancel.30.days.spread.summary$sd.123
 * 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["1-2-3"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["1-2-3"]], 2)`%，比前一天`r decide_up_down(diff.yesterday.123)``r round(abs(diff.yesterday.123), 2)`个百分点，<span style="`r text_color(diff.avg.123, diff.avg.123)`">`r decide_up_down(diff.avg.123, GY_DY)`30天内均值`r round(abs(diff.avg.123), 2)`个百分点(`r round(abs(diff.sd.123), 2)`倍标准差)</span>
 * 30天内均值为 `r round(abn.shop.cancel.30.days.spread.summary$mean.123,3)`%，标准差为 `r round(abn.shop.cancel.30.days.spread.summary$sd.123, 3)`%
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=8}
-p2 <- ggplot(abn.shop.cancel.rate, aes(x=order_date,y=ratio_payed/100)) +
-  geom_line(aes(y = ratio_payed/100, colour = respb_scene_name)) +
-  scale_linetype(NULL) +
-  scale_colour_brewer(palette = "Set1") +
-  theme(legend.title = element_blank(),
-        text = element_text('SimSun'),
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
+abn.shop.cancel.rate <- abn.shop.cancel.rate %>% mutate(ratio_payed=ratio_payed/100)
+p2 <- ggplot(abn.shop.cancel.rate, aes(x=order_date,y=ratio_payed)) +
+  geom_line(aes(y = ratio_payed, colour = respb_scene_name)) +
+  theme(text = element_text('SimSun'),
         legend.position = "bottom",
-        panel.grid.major= element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.text=element_text(size=8)) %+replace%
-  theme(panel.background = element_rect(fill = NA)) +
-  scale_y_continuous(trans="log10", breaks = base_breaks(), labels=function(x){percent(x,digits=3)})
-
-# combine 2 plots
-g1 <- ggplot_gtable(ggplot_build(p1 + ggtitle(paste("订单商户取消率变化趋势", date_range))))
-g2 <- ggplot_gtable(ggplot_build(p2))
-pp <- c(subset(g1$layout, name == "panel", se = t:r))
-g <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, 
-                       pp$l, pp$b, pp$l)
-  
-# axis tweaks
-ia <- which(g2$layout$name == "axis-l")
-ga <- g2$grobs[[ia]]
-ax <- ga$children[[2]]
-ax$widths <- rev(ax$widths)
-ax$grobs <- rev(ax$grobs)
-ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
-g <- gtable_add_cols(g, g2$widths[g2$layout[ia, ]$l], length(g$widths) - 1)
-g <- gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
-  
-## combind legends
-leg1 <- g1$grobs[[which(g1$layout$name == "guide-box")]]
-leg2 <- g2$grobs[[which(g2$layout$name == "guide-box")]]
-  
-g$grobs[[which(g$layout$name == "guide-box")]] <- gtable:::cbind_gtable(leg1, leg2, "first")
-grid::grid.draw(g)
+        legend.title=element_blank()) +
+  scale_y_continuous(trans="log10", breaks = base_breaks(), labels=function(x){percent(x,digits=3)}) +
+  labs(x = "日期", y = "百分率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) + 
+  ggtitle(paste("订单商户取消率变化趋势", date_range))
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "商户确认前商户拒单"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>商户确认前商户拒单: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "商户未接单系统取消"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>商户未接单系统取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[3]]$text <-
+  apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "运力接单前商户取消"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>运力接单前商户取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[4]]$text <-
+  apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "运力接单前T内商户取消"), 1,
+        function(item){
+         paste0("日期: ", item[1], "<br>运力接单前T内商户取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2
 ```
 
 
