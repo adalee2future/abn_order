@@ -675,15 +675,15 @@ p2 <- ggplot(abn.shop.cancel.rate, aes(x=order_date,y=ratio_payed)) +
   ggtitle(paste("订单商户取消率变化趋势", date_range))
 p2 <- plotly_build(p2)
 p2$x$data[[1]]$text <-
-  apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "商户确认前商户拒单"), 1,
-        function(item){
-         paste0(date_desc(item[1]), item[1], "<br>商户确认前商户拒单: ", percent(as.double(item[7]),3))
-          }
-        )
-p2$x$data[[2]]$text <-
   apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "商户未接单系统取消"), 1,
         function(item){
          paste0(date_desc(item[1]), item[1], "<br>商户未接单系统取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "商户确认前商户拒单"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], "<br>商户确认前商户拒单: ", percent(as.double(item[7]),3))
           }
         )
 p2$x$data[[3]]$text <-
