@@ -231,7 +231,8 @@ p1 <- ggplot(abn_total_and_payed_cnt, aes(x=order_date, y=value, color=type)) +
   ggtitle(paste("创建与支付订单量趋势", date_range)) +
   scale_color_manual(breaks=c("创建订单量", "支付订单量"),
                     values=c(total_order_color, payed_order_color)) +
-        ylim(0, max(abn_total_and_payed_cnt$value)*1.1)
+        ylim(0, max(abn_total_and_payed_cnt$value)*1.1) +
+  scale_y_continuous(labels=function(x){prettyNum(x, big.mark=",")})
   
 
 p1 <- plotly_build(p1)
