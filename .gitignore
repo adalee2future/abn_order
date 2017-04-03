@@ -16,3 +16,5 @@ abn_order_daily2_files/
 test.*
 web/
 max_mail.id
+*.pyc
+*.swp
