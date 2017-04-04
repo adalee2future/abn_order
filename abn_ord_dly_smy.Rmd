@@ -119,7 +119,7 @@ cheat_percent <- (delivery_abn_detail_table %>%
   summarize(percent=sum(percent_vs_abn)))$percent
 ```
 
-* 本日创建订单量<span style=background-color:#228B22;color:white>`r round(abn.today$created/10000)`万</span>，支付订单量`r round(abn.today$payed/10000)`万，异常订单量`r round(abn.today$abnormal/10000)`万，低质量订单（运单异常或超时）`r round(abn.today$dlvr_abnormal/10000)`万
+* 本日创建订单量`r round(abn.today$created/10000)`万，支付订单量<span style=background-color:#929f36;color:white>`r round(abn.today$payed/10000)`万</span>，异常订单量`r round(abn.today$abnormal/10000)`万，低质量订单（运单异常或超时）`r round(abn.today$dlvr_abnormal/10000)`万
 * 订单异常率<span style=background-color:#A52A2A;color:white>`r percent(abn.today$abn_rate,1)`</span>，订单低质量率<span style=background-color:#6495ED;color:white>`r percent(abn.today$dlvr_abnormal_rate,1)`</span>
 
 #### 异常订单
