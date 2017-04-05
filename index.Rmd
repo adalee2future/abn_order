@@ -9,6 +9,12 @@ params:
 locale: `r Sys.setlocale(locale="zh_CN.UTF-8")`
 ---
 
+<style>
+a:link {
+    color: #845f8b;
+}
+</style>
+
 ```{r results='asis', echo=FALSE, warning=FALSE, message=FALSE}
 # values
 rpt_date <- as.Date(params$rpt_date, format="%Y%m%d")
