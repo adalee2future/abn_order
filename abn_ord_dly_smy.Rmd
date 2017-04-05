@@ -149,6 +149,7 @@ print_table(head(abn_detail_table,6),
 ```{r, results='asis', echo=FALSE}
 print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量|占比低质量订单|累计占比低质量订单|\n", 'cornflowerblue')
 ```
+<br/><br/>
 
 
 ```{r echo=FALSE, eval=FALSE}
