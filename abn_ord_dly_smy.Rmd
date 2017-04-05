@@ -64,6 +64,11 @@ a:link {
 .foot a:link {
     color: black;
 }
+
+th, td {
+    text-align: center;
+    padding: 4px;
+}
 </style>
 
 
