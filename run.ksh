@@ -56,6 +56,11 @@ rmarkdown::render('abn_ord_dly_smy.Rmd',
 		  params=list(rpt_date="$rpt_date")
 )
 
+rmarkdown::render('index.Rmd',
+                  output_format='html_document',
+		  params=list(rpt_date="$rpt_date")
+)
+
 EOT
 
 mv abn_ord_dly*.$rpt_date.html output/
