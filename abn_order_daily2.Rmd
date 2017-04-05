@@ -695,7 +695,7 @@ p2$x$data[[3]]$text <-
 p2$x$data[[4]]$text <-
   apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "运力接单前T内商户取消"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>运力接单前T内商户取消: ", percent(as.double(item[7]),3))
+         paste0(date_desc(item[1]), item[1], "<br>运力接单前T内商户取消: ", percent(as.double(item[7]),4))
           }
         )
 p2
