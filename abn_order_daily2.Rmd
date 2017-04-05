@@ -26,6 +26,7 @@ library(tidyr)
 # fixed value
 ZJ_XJ <- c("增加", "下降")
 GY_DY <- c("高于", "低于")
+NEW_YEARS_EVE <- as.Date("2017-01-27") #除夕
 LANTERN_FESTIVAL_DAY <- as.Date("2017-02-11") #元宵节
 APOLLO_ACCIDENT_DAY <- as.Date("2017-03-23") #阿波罗事故日
 # colors
@@ -58,6 +59,7 @@ date_desc <- function(d) {
   desc <- "日期: "
   if (d == APOLLO_ACCIDENT_DAY) { desc <- "阿波罗事故日: " }
   if (d == LANTERN_FESTIVAL_DAY) { desc <- "元宵节: " }
+  if (d == NEW_YEARS_EVE) { desc <- "除夕: " }
   desc
 }
 
