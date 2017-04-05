@@ -64,6 +64,7 @@ rmarkdown::render('index.Rmd',
 EOT
 
 mv abn_ord_dly*.$rpt_date.html output/
+cp index.html output/
 
 # send mail using python
 ./sendmail.py $rpt_date $from $to

@@ -155,9 +155,9 @@ print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量
 
 <br/>
 
-[异常交易监控日报`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_order_daily/report/abn_ord_dly.`r params$rpt_date`.html)  
+[异常交易监控日报`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_ord_dly.`r params$rpt_date`.html)  
 <br/>  
-[异常类型细分场景明细`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_order_daily/report/abn_ord_dly_app.`r params$rpt_date`.html)  
+[异常类型细分场景明细`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_ord_dly_app.`r params$rpt_date`.html)  
 <br/>  
 [往期日报](http://10.12.194.196:9999/)
 
