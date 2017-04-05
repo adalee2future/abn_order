@@ -38,6 +38,7 @@ EOF
 * abn_ord_dly_smy.Rmd 邮件正文，即日报摘要
 * receivemail.py 收邮件，下载dtquery的邮件里的excel附件
 * skipmail.py 用于优化收邮件，先skip掉已有邮件，然后再等待dtquery发送的excel
+* generate_report.ksh 跑3个Rmd文件
 * sendmail.py 发送日报
 * sendlog.py 程序跑完自动发送log给自己
 * style.css 日报正文以及明细的css配置
