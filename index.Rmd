@@ -20,8 +20,7 @@ a {
 
 ```{r results='asis', echo=FALSE, warning=FALSE, message=FALSE}
 # values
-rpt_date <- as.Date(params$rpt_date, format="%Y%m%d")
-today <- rpt_date - 1
+today <- as.Date(params$rpt_date, format="%Y%m%d")
 start_date <- as.Date("20170205", format="%Y%m%d")
 my_ip <- "10.12.194.196"
 my_port <- "9999"
@@ -35,7 +34,7 @@ for (d in today:start_date) {
          my_ip, ":", my_port, "/abn_ord_dly.",
          as.character(this_day, format="%Y%m%d"), ".html)","\n\n", sep="")
      cat("* [附：异常类型细分场景明细", as.character(this_day, format="%m%d"), "](http://",
-         my_ip, ":", my_port, "/abn_ord_dly.",
+         my_ip, ":", my_port, "/abn_ord_dly_app.",
          as.character(this_day, format="%Y%m%d"), ".html)","\n\n", sep="")
      cat("* [邮件正文", as.character(this_day, format="%m%d"), "](http://",
          my_ip, ":", my_port, "/abn_ord_dly_smy.",

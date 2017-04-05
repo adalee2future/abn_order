@@ -56,7 +56,9 @@ h2{
 a:link {
     color: #845f8b;
 }
-
+a {
+    color: #845f8b;
+}
 .foot {
     font-size: 8px;
     text-align: right;
