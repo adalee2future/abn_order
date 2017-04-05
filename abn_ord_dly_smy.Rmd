@@ -150,20 +150,13 @@ print_table(head(abn_detail_table,6),
 print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量|占比低质量订单|累计占比低质量订单|\n", 'cornflowerblue')
 ```
 
-```{r echo=FALSE,eval=FALSE}
-<br/><br/>
-往期日报以及依赖的数据在[这里](http://10.12.194.196:9999/abn_order_daily/)，仅限内网访问
-```
 
-<br/>
-
+```{r echo=FALSE, eval=FALSE}
 [异常交易监控日报`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_ord_dly.`r params$rpt_date`.html)  
 <br/>  
 [异常类型细分场景明细`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_ord_dly_app.`r params$rpt_date`.html)  
 <br/>  
 [往期日报](http://10.12.194.196:9999/)
-
-```{r echo=FALSE,eval=FALSE}
 <br/>
 <div class="foot">
 Powered by [R Markdown](http://rmarkdown.rstudio.com/)&emsp;&emsp;&emsp;&emsp;
