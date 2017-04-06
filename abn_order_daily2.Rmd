@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-  rpt_date: '20170401'
+  rpt_date: '20170405'
 ---
 
 ---
@@ -28,6 +28,7 @@ ZJ_XJ <- c("增加", "下降")
 GY_DY <- c("高于", "低于")
 NEW_YEARS_EVE <- as.Date("2017-01-27") #除夕
 LANTERN_FESTIVAL_DAY <- as.Date("2017-02-11") #元宵节
+CANCEL_WECHAT_DAY <- as.Date("2017-03-24") #活跃用户开始取消微信支付
 APOLLO_ACCIDENT_DAY <- as.Date("2017-03-23") #阿波罗事故日
 # colors
 total_order_color <- '#228B22' # Forest Green
@@ -60,6 +61,7 @@ date_desc <- function(d) {
   if (d == APOLLO_ACCIDENT_DAY) { desc <- "阿波罗事故日: " }
   if (d == LANTERN_FESTIVAL_DAY) { desc <- "元宵节: " }
   if (d == NEW_YEARS_EVE) { desc <- "除夕: " }
+  #if (d == CANCEL_WECHAT_DAY) { desc <- "活跃用户取消微信支付" }
   desc
 }
 
@@ -105,7 +107,10 @@ abn_7_days_abn1_ydnorm_avg <- data.frame(abn_daily %>%
            abn == "abn1-ydnorm" & respb_scene %in% abn1_ydnorm_respb_scenes) %>%
   group_by(respb_scene, respb_scene_name) %>%
   summarize(actualcnt=round(mean(actualcnt)), cnt=mean(cnt), ratio_payed=mean(ratio_payed)))
-abn_daily[abn_daily$order_date == today & abn_daily$abn == "abn1-ydnorm",3:7] <- abn_7_days_abn1_ydnorm_avg
+
+abn_daily[abn_daily$order_date == today & abn_daily$abn == "abn1-ydnorm" &
+            abn_daily$respb_scene %in% as.character(abn_7_days_abn1_ydnorm_avg$respb_scene),
+          3:7] <- abn_7_days_abn1_ydnorm_avg
 ```
 
 ## 总订单量背景趋势

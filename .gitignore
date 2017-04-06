@@ -18,3 +18,4 @@ web/
 max_mail.id
 *.pyc
 *.swp
+*.bk.*
