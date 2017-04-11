@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-  rpt_date: '20170405'
+  rpt_date: '20170410'
 ---
 
 ---
@@ -30,6 +30,7 @@ NEW_YEARS_EVE <- as.Date("2017-01-27") #除夕
 LANTERN_FESTIVAL_DAY <- as.Date("2017-02-11") #元宵节
 CANCEL_WECHAT_DAY <- as.Date("2017-03-24") #活跃用户开始取消微信支付
 APOLLO_ACCIDENT_DAY <- as.Date("2017-03-23") #阿波罗事故日
+
 # colors
 total_order_color <- '#228B22' # Forest Green
 payed_order_color <- '#929f36' # another green
@@ -61,7 +62,6 @@ date_desc <- function(d) {
   if (d == APOLLO_ACCIDENT_DAY) { desc <- "阿波罗事故日: " }
   if (d == LANTERN_FESTIVAL_DAY) { desc <- "元宵节: " }
   if (d == NEW_YEARS_EVE) { desc <- "除夕: " }
-  #if (d == CANCEL_WECHAT_DAY) { desc <- "活跃用户取消微信支付" }
   desc
 }
 
@@ -225,7 +225,6 @@ levels(abn_total_abn_cnt$type) <- list("创建订单量"="created",
                                        "总异常订单量"="abn",
                                        "低质量订单量"="dlvr_abnormal")
 
-
 abn_total_and_payed_cnt <- rbind(abn_total_cnt,abn_payed_cnt)
 abn_total_and_payed_cnt$type <- as.factor(abn_total_and_payed_cnt$type)
 levels(abn_total_and_payed_cnt$type) <- list("创建订单量"="created",
@@ -241,22 +240,20 @@ p1 <- ggplot(abn_total_and_payed_cnt, aes(x=order_date, y=value, color=type)) +
         ylim(0, max(abn_total_and_payed_cnt$value)*1.1) +
   scale_y_continuous(labels=function(x){prettyNum(x, big.mark=",")})
   
-
 p1 <- plotly_build(p1)
 p1$x$data[[1]]$text <-
   apply(abn_total_cnt, 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>创建订单量: ", prettyNum(item[2], big.mark = ","))
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>创建订单量: ", prettyNum(item[2], big.mark = ","))
           }
         )
 p1$x$data[[2]]$text <-
   apply(abn_payed_cnt, 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>支付订单量: ", prettyNum(item[2], big.mark = ","))
+         paste0(date_desc(item[1]), item[1],  " (", weekdays(as.Date(item[1])), ")<br>支付订单量: ", prettyNum(item[2], big.mark = ","))
           }
         )
 p1
-
 ```
 
 ####【预定单】
@@ -756,4 +753,3 @@ save(today_abn1_detail,
      file=paste0("cached/detail.", params$rpt_date, ".rda")
      )
 ```
-
