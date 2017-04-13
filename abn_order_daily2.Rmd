@@ -340,13 +340,13 @@ p2 <- plotly_build(p2)
 p2$x$data[[1]]$text <-
   apply(abn_total_abn_abn_ratio, 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>订单异常率: ", round(as.double(item[2]),2), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单异常率: ", round(as.double(item[2]),2), "%")
           }
         )
 p2$x$data[[2]]$text <-
   apply(abn_total_abn_delivery_ratio, 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>订单低质量率: ", round(as.double(item[2]),2), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单低质量率: ", round(as.double(item[2]),2), "%")
           }
         )
 p2
@@ -483,25 +483,25 @@ p2 <- plotly::plotly_build(p2)
 p2$x$data[[1]]$text <-
   apply(abn_rate_135 %>% filter(abn == "订单取消_无运单"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>订单取消_无运单: ", round(as.double(item[7]),4), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单取消_无运单: ", round(as.double(item[7]),4), "%")
           }
         )
 p2$x$data[[2]]$text <-
   apply(abn_rate_135 %>% filter(abn == "订单取消_运单异常"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>订单取消_运单异常: ", round(as.double(item[7]),4), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单取消_运单异常: ", round(as.double(item[7]),4), "%")
           }
         )
 p2$x$data[[3]]$text <-
   apply(abn_rate_135 %>% filter(abn == "退单"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>退单: ", round(as.double(item[7]),4), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>退单: ", round(as.double(item[7]),4), "%")
           }
         )
 p2$x$data[[4]]$text <-
   apply(abn_rate_135 %>% filter(abn == "订单取消_运单正常"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>订单取消_运单正常: ", round(as.double(item[7]),4), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单取消_运单正常: ", round(as.double(item[7]),4), "%")
           }
         )
 p2
@@ -550,13 +550,13 @@ p2 <- plotly_build(p2)
 p2$x$data[[1]]$text <-
   apply(abn_scaled_rate %>% filter(abn == "订单正常_运单超时"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>订单正常_运单超时: ", round(as.double(item[7]),2), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单正常_运单超时: ", round(as.double(item[7]),2), "%")
           }
         )
 p2$x$data[[2]]$text <-
   apply(abn_scaled_rate %>% filter(abn == "订单正常_运单异常"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>订单正常_运单异常: ", round(as.double(item[7]),2), "%")
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单正常_运单异常: ", round(as.double(item[7]),2), "%")
           }
         )
 p2
@@ -681,25 +681,25 @@ p2 <- plotly_build(p2)
 p2$x$data[[1]]$text <-
   apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "商户未接单系统取消"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>商户未接单系统取消: ", percent(as.double(item[7]),3))
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>商户未接单系统取消: ", percent(as.double(item[7]),3))
           }
         )
 p2$x$data[[2]]$text <-
   apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "商户确认前商户拒单"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>商户确认前商户拒单: ", percent(as.double(item[7]),3))
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>商户确认前商户拒单: ", percent(as.double(item[7]),3))
           }
         )
 p2$x$data[[3]]$text <-
   apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "运力接单前商户取消"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>运力接单前商户取消: ", percent(as.double(item[7]),3))
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前商户取消: ", percent(as.double(item[7]),3))
           }
         )
 p2$x$data[[4]]$text <-
   apply(abn.shop.cancel.rate %>% filter(respb_scene_name == "运力接单前T内商户取消"), 1,
         function(item){
-         paste0(date_desc(item[1]), item[1], "<br>运力接单前T内商户取消: ", percent(as.double(item[7]),4))
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前T内商户取消: ", percent(as.double(item[7]),4))
           }
         )
 p2
