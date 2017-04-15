@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "20170401"
+    rpt_date: "20170410"
 ---
 
 ---
@@ -54,7 +54,9 @@ format_number <- function(x, digits=2, has_color=FALSE, has_sign=TRUE) {
 ## generate table
 cat_header <- function() {
   cat("\n")
-  cat("|细分场景(id)|细分场景|今日订单量|占支付订单量(%)|比昨日变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n")
+  cat("|细分场景(id)|细分场景|今日订单量|占支付订单量(%)|",
+      compare_day_desc,
+      "变化(%)|比30天均值变化(%)|比30天均值变化(标准差)|30天内均值（%）|30天内标准差(%)|\n", sep="")
   cat("| --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- | --------- |\n")
 }
 more_detail_table <- function(today_detail) {
@@ -69,14 +71,14 @@ more_detail_table <- function(today_detail) {
     ratio_payed.30days.summary <- ratio_payed.30days %>% 
       group_by(1) %>%
       summarise(mean.ratio_payed=mean(ratio_payed), sd.ratio_payed=sd(ratio_payed))
-    diff.yesterday <- row_data$ratio_payed - subset(ratio_payed.30days, order_date == yesterday)$ratio_payed
+    diff.compare_day <- row_data$ratio_payed - subset(ratio_payed.30days, order_date == compare_day)$ratio_payed
     diff.mean <- row_data$ratio_payed - ratio_payed.30days.summary$mean.ratio_payed
     diff.sd <- diff.mean / ratio_payed.30days.summary$sd.ratio_payed
     append_data <- data.frame(respb_scene=row_data$respb_scene,
                               respb_scene_name=row_data$respb_scene_name,
                               actualcnt=row_data$actualcnt,
                               ratio_payed=row_data$ratio_payed,
-                              diff.yesterday=ifelse(length(diff.yesterday) == 0, NA, diff.yesterday),
+                              diff.compare_day=ifelse(length(diff.compare_day) == 0, NA, diff.compare_day),
                               diff.mean=diff.mean,
                               diff.sd=diff.sd,
                               mean.ratio_payed=ratio_payed.30days.summary$mean.ratio_payed,
@@ -98,7 +100,7 @@ print_table <- function(detail_table, header_color) {
         as.character(row_data$respb_scene_name),
         prettyNum(row_data$actualcnt, big.mark=","),
         round(row_data$ratio_payed, 4),
-        format_number(row_data$diff.yesterday, 4),
+        format_number(row_data$diff.compare_day, 4),
         format_number(row_data$diff.mean, 4),
         format_number(row_data$diff.sd, 2, has_color=TRUE),
         round(row_data$mean.ratio_payed, 4),
