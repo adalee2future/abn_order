@@ -131,9 +131,9 @@ cheat_percent <- (delivery_abn_detail_table %>%
 
 #### 异常订单
 
-* 商户未接单或者拒单仍然对异常贡献最大，占比`r percent(b_cancel_or_reject_rate,0)`
-* 用户取消订单（商户接单前+运力接单前+取餐前），占比`r percent(u_cancel_before_shop_or_ship,0)`
-* 6类贡献最多的细分异常占据所有异常`r percent(abn_detail_table[6,]$cumsum,0)`，详见下表
+* 商户未接单或者拒单，占比所有异常订单`r percent(b_cancel_or_reject_rate,0)`
+* 用户取消订单（商户接单前+运力接单前+取餐前），占比所有异常订单`r percent(u_cancel_before_shop_or_ship,0)`
+* 6类贡献最多的细分异常占比所有异常`r percent(abn_detail_table[6,]$cumsum,0)`，详见下表
 
 ```{r, results='asis', echo=FALSE}
 print_table(head(abn_detail_table,6),
