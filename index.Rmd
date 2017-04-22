@@ -29,7 +29,10 @@ my_port <- "9999"
 
 for (d in today:start_date) {
      this_day <- as.Date(d, origin="1970-01-01")
-     cat("####异常交易监控日报", as.character(this_day, format="%Y-%m-%d"), "\n\n", sep="")  
+     cat("####异常交易监控日报",
+         as.character(this_day, format="%Y-%m-%d"),
+         " (",
+         weekdays(this_day), ")\n\n", sep="")  
      cat("* [异常交易监控日报", as.character(this_day, format="%m%d"), "](http://",
          my_ip, ":", my_port, "/abn_ord_dly.",
          as.character(this_day, format="%Y%m%d"), ".html)","\n\n", sep="")
