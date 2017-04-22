@@ -121,8 +121,13 @@ abn_7_days_abn5_avg <- data.frame(abn_daily %>%
   group_by(respb_scene, respb_scene_name) %>%
   summarize(actualcnt=round(mean(actualcnt)), cnt=mean(cnt), ratio_payed=mean(ratio_payed)))
 
-abn_daily[abn_daily$order_date == today & abn_daily$abn == "abn5", 3:7] <- abn_7_days_abn5_avg
-
+if ((abn_daily %>%
+       filter(order_date == today & abn == "abn5" & respb_scene == "申请退款")
+     )$actualcnt < max(abn_7_days_abn5_avg$actualcnt)
+    )
+    {
+      abn_daily[abn_daily$order_date == today & abn_daily$abn == "abn5", 3:7] <- abn_7_days_abn5_avg
+    }
 ```
 
 ## 总订单量背景趋势
