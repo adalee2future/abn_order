@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-  rpt_date: '20170410'
+  rpt_date: '20170421'
 ---
 
 ---
@@ -113,6 +113,16 @@ abn_7_days_abn1_ydnorm_avg <- data.frame(abn_daily %>%
 abn_daily[abn_daily$order_date == today & abn_daily$abn == "abn1-ydnorm" &
             abn_daily$respb_scene %in% as.character(abn_7_days_abn1_ydnorm_avg$respb_scene),
           3:7] <- abn_7_days_abn1_ydnorm_avg
+
+# fix data, abn5 for today may happen tomorrow
+abn_7_days_abn5_avg <- data.frame(abn_daily %>%
+  filter(order_date >= yesterday - 7 & order_date <= yesterday &
+           abn == "abn5") %>%
+  group_by(respb_scene, respb_scene_name) %>%
+  summarize(actualcnt=round(mean(actualcnt)), cnt=mean(cnt), ratio_payed=mean(ratio_payed)))
+
+abn_daily[abn_daily$order_date == today & abn_daily$abn == "abn5", 3:7] <- abn_7_days_abn5_avg
+
 ```
 
 ## 总订单量背景趋势
