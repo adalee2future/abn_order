@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-  rpt_date: '20170421'
+  rpt_date: '20170430'
 ---
 
 ---
@@ -404,12 +404,12 @@ abn.30days.detail <- abn_daily %>%
 abn.30days.detail.spread <- spread(abn.30days.detail, abn, ratio_payed)
 abn.30days.detail.summary <- abn.30days.detail.spread %>%
   group_by(1) %>%
-  summarize(mean.abn1=mean(abn1), sd.abn1=sd(abn1),
-            mean.abn1_ydnorm=mean(`abn1-ydnorm`), sd.abn1_ydnorm=sd(`abn1-ydnorm`),
-            mean.abn2=mean(abn2), sd.abn2=sd(abn2),
-            mean.abn2_chaoshi=mean(`abn2-chaoshi`), sd.abn2_chaoshi=sd(`abn2-chaoshi`),
-            mean.abn3=mean(abn3), sd.abn3=sd(abn3),
-            mean.abn5=mean(abn5), sd.abn5=sd(abn5))
+  summarize(mean.abn1=mean(abn1, na.rm=TRUE), sd.abn1=sd(abn1, na.rm=TRUE),
+            mean.abn1_ydnorm=mean(`abn1-ydnorm`, na.rm=TRUE), sd.abn1_ydnorm=sd(`abn1-ydnorm`, na.rm=TRUE),
+            mean.abn2=mean(abn2, na.rm=TRUE), sd.abn2=sd(abn2, na.rm=TRUE),
+            mean.abn2_chaoshi=mean(`abn2-chaoshi`, na.rm=TRUE), sd.abn2_chaoshi=sd(`abn2-chaoshi`, na.rm=TRUE),
+            mean.abn3=mean(abn3, na.rm=TRUE), sd.abn3=sd(abn3, na.rm=TRUE),
+            mean.abn5=mean(abn5, na.rm=TRUE), sd.abn5=sd(abn5, na.rm=TRUE))
 
 abn.today.detail.actualcnt <- abn_daily %>%
   filter(order_date == today & respb_scene == "_汇总") %>%
