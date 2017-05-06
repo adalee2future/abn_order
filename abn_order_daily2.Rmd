@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-  rpt_date: '20170430'
+  rpt_date: '20170505'
 ---
 
 ---
@@ -30,6 +30,7 @@ NEW_YEARS_EVE <- as.Date("2017-01-27") #除夕
 LANTERN_FESTIVAL_DAY <- as.Date("2017-02-11") #元宵节
 CANCEL_WECHAT_DAY <- as.Date("2017-03-24") #活跃用户开始取消微信支付
 APOLLO_ACCIDENT_DAY <- as.Date("2017-03-23") #阿波罗事故日
+TAOBAO_ACCIDENT_DAY <- as.Date("2017-04-24") #手淘事故日
 
 # colors
 total_order_color <- '#228B22' # Forest Green
@@ -62,6 +63,7 @@ date_desc <- function(d) {
   if (d == APOLLO_ACCIDENT_DAY) { desc <- "阿波罗事故日: " }
   if (d == LANTERN_FESTIVAL_DAY) { desc <- "元宵节: " }
   if (d == NEW_YEARS_EVE) { desc <- "除夕: " }
+  if (d == TAOBAO_ACCIDENT_DAY) { desc <- "手淘事故日: " }
   desc
 }
 
@@ -94,6 +96,9 @@ abn_daily <- abn_daily[order(abn_daily$order_date, abn_daily$abn), ]
 
 # some special date
 today <- max(abn_daily$order_date)
+if (today != as.Date(params$rpt_date, format="%Y%m%d")) {
+  stop("数据最新日期与报告日期不符")
+}
 yesterday <- today - 1
 compare_day <- today -7
 compare_day_desc <- paste0("同比上周", substr(weekdays(compare_day),3,3))
@@ -494,21 +499,19 @@ abn_rate <- abn_daily %>%
   mutate(value=ratio_payed, abn=droplevels(abn)) # remove unused levels
 
 abn_rate_135 <- abn_rate %>%
-  filter(abn %in% c("abn1", "abn1-ydnorm", "abn3", "abn5")) %>%
+  filter(abn %in% c("abn1","abn3", "abn5")) %>%
   mutate(abn=droplevels(abn), value=value/100)
 
 levels(abn_rate_135$abn) <- list("订单取消_无运单"="abn3",
                                  "订单取消_运单异常"="abn1",
-                                 "退单"="abn5",
-                                 "订单取消_运单正常"="abn1-ydnorm")
+                                 "退单"="abn5")
 abn_rate_135 <- abn_rate_135[order(abn_rate_135$order_date), ]
 p2 <- ggplot(abn_rate_135, aes(x=order_date,y=value)) +
   geom_line(aes(y = value, colour = abn)) +
   ggtitle(paste("订单异常率变化趋势", date_range)) +
   scale_color_manual(breaks=c("订单取消_无运单",
                               "订单取消_运单异常",
-                              "退单",
-                              "订单取消_运单正常"),
+                              "退单"),
                      values=c(abn3_color,
                               abn1_color,
                               abn5_color,
@@ -541,73 +544,12 @@ p2$x$data[[3]]$text <-
          paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>退单: ", round(as.double(item[7]),4), "%")
           }
         )
-p2$x$data[[4]]$text <-
-  apply(abn_rate_135 %>% filter(abn == "订单取消_运单正常"), 1,
-        function(item){
-         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单取消_运单正常: ", round(as.double(item[7]),4), "%")
-          }
-        )
 p2
 ```
 
-## 低质量订单（运单异常或超时）摘要
+### 订单商户取消率
 
-#### 【订单正常运单超时】
-
-* 本日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2-chaoshi"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2-chaoshi"]], 2)`%，`r compare_day_desc``r decide_up_down(abn2.chaoshi.diff.compare_day)``r round(abs(abn2.chaoshi.diff.compare_day), 2)`个百分点，<span style="`r text_color(abn2.chaoshi.diff.avg, abn2.chaoshi.diff.sd)`">`r decide_up_down(abn2.chaoshi.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.chaoshi.diff.avg), 2)`个百分点(`r round(abs(abn2.chaoshi.diff.sd), 2)`倍标准差)</span>
-* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn2_chaoshi,3)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2_chaoshi, 3)`%
-
-#### 【订单正常运单异常】
-
-* 本日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2"]], 2)`%，`r compare_day_desc``r decide_up_down(abn2.diff.compare_day)``r round(abs(abn2.diff.compare_day), 2)`个百分点，<span style="`r text_color(abn2.diff.avg, abn2.diff.sd)`">`r decide_up_down(abn2.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.diff.avg), 2)`个百分点(`r round(abs(abn2.diff.sd), 2)`倍标准差)</span>
-* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn2,3)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2, 3)`%
-
-
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
-
-# plot2
-
-rate1 <- abn_rate %>%
-  filter(abn %in% c("abn2", "abn2-chaoshi")) %>%
-  mutate(value=ratio_payed)
-
-abn_scaled_rate <- rate1
-abn_scaled_rate$abn <- droplevels(abn_scaled_rate$abn) # remove unused levels
-levels(abn_scaled_rate$abn) <- list("订单正常_运单超时"="abn2-chaoshi",
-                                    "订单正常_运单异常"="abn2"
-                                    )
-abn_scaled_rate <- abn_scaled_rate[order(abn_scaled_rate$order_date), ]
-p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) +
-  geom_line(aes(y = value, colour = abn)) +
-  scale_color_manual(breaks=c("订单正常_运单超时", "订单正常_运单异常"),
-                     values=c(abn2_chaoshi_color, abn2_color)) +
-  theme(text = element_text('SimSun'),
-        legend.text=element_text(size=8),
-        legend.title=element_blank()) +
-  ylim(0, 10) + xlab("日期") + ylab("低质量率") +
-  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) +
-  ggtitle(paste("订单低质量率变化趋势", date_range)) +
-  scale_y_continuous(labels=function(x){paste0(x,"%")})
-
-p2 <- plotly_build(p2)
-p2$x$data[[1]]$text <-
-  apply(abn_scaled_rate %>% filter(abn == "订单正常_运单超时"), 1,
-        function(item){
-         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单正常_运单超时: ", round(as.double(item[7]),2), "%")
-          }
-        )
-p2$x$data[[2]]$text <-
-  apply(abn_scaled_rate %>% filter(abn == "订单正常_运单异常"), 1,
-        function(item){
-         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单正常_运单异常: ", round(as.double(item[7]),2), "%")
-          }
-        )
-p2
-```
-
-## 订单商户取消率 (属于异常订单)
-
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 # 订单商户取消率变化趋势
 ## 3-1-1	商户未接单系统取消
 ## 3-1-2	商户确认前商户拒单
@@ -689,25 +631,27 @@ diff.avg.123 <- abn.shop.cancel.ratio.today.spread[["1-2-3"]] -
 diff.sd.123 <- diff.avg.123 / abn.shop.cancel.30.days.spread.summary$sd.123
 ```
 
+```{r eval=FALSE,include=FALSE}
 #### 【商户未接单系统取消】
 
-* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["3-1-1"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["3-1-1"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.311)``r round(abs(diff.compare_day.311), 3)`个百分点，<span style="`r text_color(diff.avg.311, diff.avg.311)`">`r decide_up_down(diff.avg.311, GY_DY)`30天内均值`r round(abs(diff.avg.311), 3)`个百分点(`r round(abs(diff.sd.311), 3)`倍标准差)</span>
+* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["3-1-1"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["3-1-1"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.311)``r round(abs(diff.compare_day.311), 3)`个百分点，<span style="`r text_color(diff.avg.311, diff.sd.311)`">`r decide_up_down(diff.avg.311, GY_DY)`30天内均值`r round(abs(diff.avg.311), 3)`个百分点(`r round(abs(diff.sd.311), 3)`倍标准差)</span>
 * 30天内均值为 `r round(abn.shop.cancel.30.days.spread.summary$mean.311,3)`%，标准差为 `r round(abn.shop.cancel.30.days.spread.summary$sd.311, 3)`%
 
 #### 【商户确认前商户拒单】
 
-* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["3-1-2"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["3-1-2"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.312)``r round(abs(diff.compare_day.312), 3)`个百分点，<span style="`r text_color(diff.avg.312, diff.avg.312)`">`r decide_up_down(diff.avg.312, GY_DY)`30天内均值`r round(abs(diff.avg.312), 3)`个百分点(`r round(abs(diff.sd.312), 3)`倍标准差)</span>
+* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["3-1-2"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["3-1-2"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.312)``r round(abs(diff.compare_day.312), 3)`个百分点，<span style="`r text_color(diff.avg.312, diff.sd.312)`">`r decide_up_down(diff.avg.312, GY_DY)`30天内均值`r round(abs(diff.avg.312), 3)`个百分点(`r round(abs(diff.sd.312), 3)`倍标准差)</span>
 * 30天内均值为 `r round(abn.shop.cancel.30.days.spread.summary$mean.312,3)`%，标准差为 `r round(abn.shop.cancel.30.days.spread.summary$sd.312, 3)`%
 
 #### 【运力接单前商户取消】
 
-* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["3-2-2"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["3-2-2"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.322)``r round(abs(diff.compare_day.322), 3)`个百分点，<span style="`r text_color(diff.avg.322, diff.avg.322)`">`r decide_up_down(diff.avg.322, GY_DY)`30天内均值`r round(abs(diff.avg.322), 3)`个百分点(`r round(abs(diff.sd.322), 3)`倍标准差)</span>
+* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["3-2-2"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["3-2-2"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.322)``r round(abs(diff.compare_day.322), 3)`个百分点，<span style="`r text_color(diff.avg.322, diff.sd.322)`">`r decide_up_down(diff.avg.322, GY_DY)`30天内均值`r round(abs(diff.avg.322), 3)`个百分点(`r round(abs(diff.sd.322), 3)`倍标准差)</span>
 * 30天内均值为 `r round(abn.shop.cancel.30.days.spread.summary$mean.322,3)`%，标准差为 `r round(abn.shop.cancel.30.days.spread.summary$sd.322, 3)`%
 
 #### 【运力接单前T内商户取消】
 
-* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["1-2-3"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["1-2-3"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.123)``r round(abs(diff.compare_day.123), 3)`个百分点，<span style="`r text_color(diff.avg.123, diff.avg.123)`">`r decide_up_down(diff.avg.123, GY_DY)`30天内均值`r round(abs(diff.avg.123), 3)`个百分点(`r round(abs(diff.sd.123), 3)`倍标准差)</span>
+* 本日订单量 `r prettyNum(abn.shop.cancel.actualcnt.today.spread[["1-2-3"]], big.mark=",")`单，占支付订单量`r round(abn.shop.cancel.ratio.today.spread[["1-2-3"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.123)``r round(abs(diff.compare_day.123), 3)`个百分点，<span style="`r text_color(diff.avg.123, diff.sd.123)`">`r decide_up_down(diff.avg.123, GY_DY)`30天内均值`r round(abs(diff.avg.123), 3)`个百分点(`r round(abs(diff.sd.123), 3)`倍标准差)</span>
 * 30天内均值为 `r round(abn.shop.cancel.30.days.spread.summary$mean.123,3)`%，标准差为 `r round(abn.shop.cancel.30.days.spread.summary$sd.123, 3)`%
+```
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
 abn.shop.cancel.rate <- abn.shop.cancel.rate %>% mutate(ratio_payed=ratio_payed/100)
@@ -748,6 +692,385 @@ p2$x$data[[4]]$text <-
 p2
 ```
 
+### 订单用户取消率
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+# 订单商户取消率变化趋势
+## 3-1-0	商户确认前用户取消
+## 3-2-1	运力接单前用户取消
+## 1-3-1	运力取餐前用户取消
+## 1-2-1	运力接单前T内用户取消
+## 1-2-5  运力接单前自配送超时用户取消
+## 1-2-51  运力接单前运单降级超时用户取消
+abn.user.cancel.rate <- abn_daily %>%
+  filter(abn %in% c("abn1", "abn3") & 
+           respb_scene %in% c("1-3-1", "1-2-1", "1-2-5", "1-2-51", "3-1-0", "3-2-1"))  %>%
+  mutate(respb_scene=droplevels(respb_scene),
+         abn=droplevels(abn),
+         respb_scene_name=droplevels(respb_scene_name))
+
+abn.user.cancel.rate$respb_scene_name <- factor(abn.user.cancel.rate$respb_scene_name,
+                                                levels=c("商户确认前用户取消",
+                                                         "运力接单前用户取消",
+                                                         "运力取餐前用户取消",
+                                                         "运力接单前T内用户取消",
+                                                         "运力接单前自配送超时用户取消",
+                                                         "运力接单前运单降级超时用户取消"))
+# 30天数据
+abn.user.cancel.30.days <- abn.user.cancel.rate %>%
+  filter(order_date > start_date) %>%
+  select(order_date, respb_scene, ratio_payed)
+# 30天数据，列转行
+abn.user.cancel.30.days.spread <- spread(abn.user.cancel.30.days,
+                                         respb_scene,
+                                         ratio_payed)
+# 今日数据, 订单数
+abn.user.cancel.actualcnt.today <- abn.user.cancel.rate %>%
+  filter(order_date == today) %>%
+  select(respb_scene, actualcnt)
+# 今日数据, 订单数，列转行
+abn.user.cancel.actualcnt.today.spread <- spread(abn.user.cancel.actualcnt.today,
+                                                 respb_scene, actualcnt)
+
+# 同比日数据, 占比支付订单量
+abn.user.cancel.ratio.compare_day <- abn.user.cancel.rate %>%
+  filter(order_date == compare_day) %>%
+  select(respb_scene, ratio_payed)
+# 同比日数据, 占比支付订单量，列转行
+abn.user.cancel.ratio.compare_day.spread <- spread(abn.user.cancel.ratio.compare_day,
+                                                     respb_scene, ratio_payed)
+
+# 今日数据, 占比支付订单量
+abn.user.cancel.ratio.today <- abn.user.cancel.rate %>%
+  filter(order_date == today) %>%
+  select(respb_scene, ratio_payed)
+# 今日数据, 占比支付订单量，列转行
+abn.user.cancel.ratio.today.spread <- spread(abn.user.cancel.ratio.today,
+                                             respb_scene, ratio_payed)
+
+abn.user.cancel.30.days.spread.summary <- abn.user.cancel.30.days.spread %>%
+  group_by(1) %>%
+  summarize(mean.310=mean(`3-1-0`), sd.310=sd(`3-1-0`), #商户确认前用户取消
+            mean.321=mean(`3-2-1`), sd.321=sd(`3-2-1`), #运力接单前用户取消
+            mean.131=mean(`1-3-1`), sd.131=sd(`1-3-1`), #运力取餐前用户取消
+            mean.121=mean(`1-2-1`), sd.121=sd(`1-2-1`), #运力接单前T内用户取消
+            mean.125=mean(`1-2-5`), sd.125=sd(`1-2-5`), #运力接单前自配送超时用户取消
+            mean.1251=mean(`1-2-51`), sd.1251=sd(`1-2-51`)) #运力接单前运单降级超时用户取消
+
+# 3-1-0	商户确认前用户取消
+diff.compare_day.310 <- abn.user.cancel.ratio.today.spread[["3-1-0"]] -
+  abn.user.cancel.ratio.compare_day.spread[["3-1-0"]]
+diff.avg.310 <- abn.user.cancel.ratio.today.spread[["3-1-0"]] - 
+  abn.user.cancel.30.days.spread.summary$mean.310
+diff.sd.310 <- diff.avg.310 / abn.user.cancel.30.days.spread.summary$sd.310
+# 3-2-1	运力接单前用户取消
+diff.compare_day.321 <- abn.user.cancel.ratio.today.spread[["3-2-1"]] -
+  abn.user.cancel.ratio.compare_day.spread[["3-2-1"]]
+diff.avg.321 <- abn.user.cancel.ratio.today.spread[["3-2-1"]] - 
+  abn.user.cancel.30.days.spread.summary$mean.321
+diff.sd.321 <- diff.avg.321 / abn.user.cancel.30.days.spread.summary$sd.321
+# 1-3-1 运力取餐前用户取消
+diff.compare_day.131 <- abn.user.cancel.ratio.today.spread[["1-3-1"]] -
+  abn.user.cancel.ratio.compare_day.spread[["1-3-1"]]
+diff.avg.131 <- abn.user.cancel.ratio.today.spread[["1-3-1"]] - 
+  abn.user.cancel.30.days.spread.summary$mean.131
+diff.sd.131 <- diff.avg.131 / abn.user.cancel.30.days.spread.summary$sd.131
+# 1-2-1	运力接单前T内用户取消
+diff.compare_day.121 <- abn.user.cancel.ratio.today.spread[["1-2-1"]] -
+  abn.user.cancel.ratio.compare_day.spread[["1-2-1"]]
+diff.avg.121 <- abn.user.cancel.ratio.today.spread[["1-2-1"]] - 
+  abn.user.cancel.30.days.spread.summary$mean.121
+diff.sd.121 <- diff.avg.121 / abn.user.cancel.30.days.spread.summary$sd.121
+# 1-2-5 运力接单前自配送超时用户取消
+diff.compare_day.125 <- abn.user.cancel.ratio.today.spread[["1-2-5"]] -
+  abn.user.cancel.ratio.compare_day.spread[["1-2-5"]]
+diff.avg.125 <- abn.user.cancel.ratio.today.spread[["1-2-5"]] - 
+  abn.user.cancel.30.days.spread.summary$mean.125
+diff.sd.125 <- diff.avg.125 / abn.user.cancel.30.days.spread.summary$sd.125
+# 1-2-51	运力接单前运单降级超时用户取消
+diff.compare_day.1251 <- abn.user.cancel.ratio.today.spread[["1-2-51"]] -
+  abn.user.cancel.ratio.compare_day.spread[["1-2-51"]]
+diff.avg.1251 <- abn.user.cancel.ratio.today.spread[["1-2-51"]] - 
+  abn.user.cancel.30.days.spread.summary$mean.1251
+diff.sd.1251 <- diff.avg.1251 / abn.user.cancel.30.days.spread.summary$sd.1251
+```
+
+```{r eval=FALSE,include=FALSE}
+#### 【商户确认前用户取消】
+
+* 本日订单量 `r prettyNum(abn.user.cancel.actualcnt.today.spread[["3-1-0"]], big.mark=",")`单，占支付订单量`r round(abn.user.cancel.ratio.today.spread[["3-1-0"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.310)``r round(abs(diff.compare_day.310), 3)`个百分点，<span style="`r text_color(diff.avg.310, diff.sd.310)`">`r decide_up_down(diff.avg.310, GY_DY)`30天内均值`r round(abs(diff.avg.310), 3)`个百分点(`r round(abs(diff.sd.310), 3)`倍标准差)</span>
+* 30天内均值为 `r round(abn.user.cancel.30.days.spread.summary$mean.310,3)`%，标准差为 `r round(abn.user.cancel.30.days.spread.summary$sd.310, 3)`%
+
+#### 【运力接单前用户取消】
+
+* 本日订单量 `r prettyNum(abn.user.cancel.actualcnt.today.spread[["3-2-1"]], big.mark=",")`单，占支付订单量`r round(abn.user.cancel.ratio.today.spread[["3-2-1"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.321)``r round(abs(diff.compare_day.321), 3)`个百分点，<span style="`r text_color(diff.avg.321, diff.sd.321)`">`r decide_up_down(diff.avg.321, GY_DY)`30天内均值`r round(abs(diff.avg.321), 3)`个百分点(`r round(abs(diff.sd.321), 3)`倍标准差)</span>
+* 30天内均值为 `r round(abn.user.cancel.30.days.spread.summary$mean.321,3)`%，标准差为 `r round(abn.user.cancel.30.days.spread.summary$sd.321, 3)`%
+
+#### 【运力取餐前用户取消】
+
+* 本日订单量 `r prettyNum(abn.user.cancel.actualcnt.today.spread[["1-3-1"]], big.mark=",")`单，占支付订单量`r round(abn.user.cancel.ratio.today.spread[["1-3-1"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.131)``r round(abs(diff.compare_day.131), 3)`个百分点，<span style="`r text_color(diff.avg.131, diff.sd.131)`">`r decide_up_down(diff.avg.131, GY_DY)`30天内均值`r round(abs(diff.avg.131), 3)`个百分点(`r round(abs(diff.sd.131), 3)`倍标准差)</span>
+* 30天内均值为 `r round(abn.user.cancel.30.days.spread.summary$mean.131,3)`%，标准差为 `r round(abn.user.cancel.30.days.spread.summary$sd.131, 3)`%
+
+#### 【运力接单前T内用户取消】
+
+* 本日订单量 `r prettyNum(abn.user.cancel.actualcnt.today.spread[["1-2-1"]], big.mark=",")`单，占支付订单量`r round(abn.user.cancel.ratio.today.spread[["1-2-1"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.121)``r round(abs(diff.compare_day.121), 3)`个百分点，<span style="`r text_color(diff.avg.121, diff.sd.121)`">`r decide_up_down(diff.avg.121, GY_DY)`30天内均值`r round(abs(diff.avg.121), 3)`个百分点(`r round(abs(diff.sd.121), 3)`倍标准差)</span>
+* 30天内均值为 `r round(abn.user.cancel.30.days.spread.summary$mean.121,3)`%，标准差为 `r round(abn.user.cancel.30.days.spread.summary$sd.121, 3)`%
+
+#### 【运力接单前自配送超时用户取消】
+
+* 本日订单量 `r prettyNum(abn.user.cancel.actualcnt.today.spread[["1-2-5"]], big.mark=",")`单，占支付订单量`r round(abn.user.cancel.ratio.today.spread[["1-2-5"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.125)``r round(abs(diff.compare_day.125), 3)`个百分点，<span style="`r text_color(diff.avg.125, diff.sd.125)`">`r decide_up_down(diff.avg.125, GY_DY)`30天内均值`r round(abs(diff.avg.125), 3)`个百分点(`r round(abs(diff.sd.125), 3)`倍标准差)</span>
+* 30天内均值为 `r round(abn.user.cancel.30.days.spread.summary$mean.125,3)`%，标准差为 `r round(abn.user.cancel.30.days.spread.summary$sd.125, 3)`%
+
+#### 【运力接单前运单降级超时用户取消】
+
+* 本日订单量 `r prettyNum(abn.user.cancel.actualcnt.today.spread[["1-2-51"]], big.mark=",")`单，占支付订单量`r round(abn.user.cancel.ratio.today.spread[["1-2-51"]], 3)`%，`r compare_day_desc``r decide_up_down(diff.compare_day.1251)``r round(abs(diff.compare_day.1251), 3)`个百分点，<span style="`r text_color(diff.avg.1251, diff.sd.1251)`">`r decide_up_down(diff.avg.1251, GY_DY)`30天内均值`r round(abs(diff.avg.1251), 3)`个百分点(`r round(abs(diff.sd.1251), 3)`倍标准差)</span>
+* 30天内均值为 `r round(abn.user.cancel.30.days.spread.summary$mean.1251,3)`%，标准差为 `r round(abn.user.cancel.30.days.spread.summary$sd.1251, 3)`%
+```
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
+abn.user.cancel.rate <- abn.user.cancel.rate %>% mutate(ratio_payed=ratio_payed/100)
+p2 <- ggplot(abn.user.cancel.rate, aes(x=order_date,y=ratio_payed)) +
+  geom_line(aes(y = ratio_payed, colour = respb_scene_name)) +
+  theme(text = element_text('SimSun'),
+        legend.position = "bottom",
+        legend.title=element_blank()) +
+  scale_y_continuous(trans="log10", breaks = base_breaks(), labels=function(x){percent(x,digits=4)}) +
+  labs(x = "日期", y = "用户取消率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) + 
+  ggtitle(paste("订单用户取消率变化趋势", date_range))
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn.user.cancel.rate %>% filter(respb_scene_name == "商户确认前用户取消"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>商户确认前用户取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn.user.cancel.rate %>% filter(respb_scene_name == "运力接单前用户取消"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前用户取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[3]]$text <-
+  apply(abn.user.cancel.rate %>% filter(respb_scene_name == "运力取餐前用户取消"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力取餐前用户取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[4]]$text <-
+  apply(abn.user.cancel.rate %>% filter(respb_scene_name == "运力接单前T内用户取消"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前T内用户取消: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[5]]$text <-
+  apply(abn.user.cancel.rate %>% filter(respb_scene_name == "运力接单前自配送超时用户取消"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前自配送超时用户取消: ", percent(as.double(item[7]),4))
+          }
+        )
+p2$x$data[[6]]$text <-
+  apply(abn.user.cancel.rate %>% filter(respb_scene_name == "运力接单前运单降级超时用户取消"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前运单降级超时用户取消: ", percent(as.double(item[7]),4))
+          }
+        )
+p2
+```
+
+### 订单风控取消率
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=6.5}
+abn.risk.cancel <-  abn_daily %>% 
+  filter(respb_scene == "3-1-3") %>%
+  mutate(ratio_payed=ratio_payed/100)
+
+p2 <- ggplot(abn.risk.cancel, aes(x=order_date,y=ratio_payed)) +
+  geom_line(aes(y = ratio_payed)) +
+  theme(text = element_text('SimSun'),
+        legend.position = "bottom",
+        legend.title=element_blank()) +
+  labs(x = "日期", y = "取消率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) + 
+  scale_y_continuous(labels=function(x){percent(x,digits=2)}) +
+  ggtitle(paste("风控取消率变化趋势", date_range))
+
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn.risk.cancel, 1,
+        function(item){
+          paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>风控取消率: ",
+                 percent(as.numeric(item[7]),digits = 3))
+        
+          }
+        )
+p2
+```
+
+## 低质量订单（运单异常或超时）摘要
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
+
+# plot2
+
+rate1 <- abn_rate %>%
+  filter(abn %in% c("abn2", "abn2-chaoshi")) %>%
+  mutate(value=ratio_payed)
+
+abn_scaled_rate <- rate1
+abn_scaled_rate$abn <- droplevels(abn_scaled_rate$abn) # remove unused levels
+levels(abn_scaled_rate$abn) <- list("订单正常_运单超时"="abn2-chaoshi",
+                                    "订单正常_运单异常"="abn2"
+                                    )
+abn_scaled_rate <- abn_scaled_rate[order(abn_scaled_rate$order_date), ]
+p2 <- ggplot(abn_scaled_rate, aes(x=order_date,y=value)) +
+  geom_line(aes(y = value, colour = abn)) +
+  scale_color_manual(breaks=c("订单正常_运单超时", "订单正常_运单异常"),
+                     values=c(abn2_chaoshi_color, abn2_color)) +
+  theme(text = element_text('SimSun'),
+        legend.text=element_text(size=8),
+        legend.title=element_blank()) +
+  ylim(0, 10) + xlab("日期") + ylab("低质量率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) +
+  ggtitle(paste("订单低质量率变化趋势", date_range)) +
+  scale_y_continuous(labels=function(x){paste0(x,"%")})
+
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn_scaled_rate %>% filter(abn == "订单正常_运单超时"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单正常_运单超时: ", round(as.double(item[7]),2), "%")
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn_scaled_rate %>% filter(abn == "订单正常_运单异常"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>订单正常_运单异常: ", round(as.double(item[7]),2), "%")
+          }
+        )
+p2
+```
+
+#### 【订单正常运单超时】
+
+* 本日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2-chaoshi"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2-chaoshi"]], 2)`%，`r compare_day_desc``r decide_up_down(abn2.chaoshi.diff.compare_day)``r round(abs(abn2.chaoshi.diff.compare_day), 2)`个百分点，<span style="`r text_color(abn2.chaoshi.diff.avg, abn2.chaoshi.diff.sd)`">`r decide_up_down(abn2.chaoshi.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.chaoshi.diff.avg), 2)`个百分点(`r round(abs(abn2.chaoshi.diff.sd), 2)`倍标准差)</span>
+* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn2_chaoshi,3)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2_chaoshi, 3)`%
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
+abn2.chaoshi.rate <- abn_daily %>%
+  filter(abn == "abn2-chaoshi" & 
+           respb_scene %in% c("2-3-4", "2-4-1", "2-3-1"))  %>%
+  mutate(respb_scene=droplevels(respb_scene),
+         abn=droplevels(abn),
+         respb_scene_name=droplevels(respb_scene_name))
+
+abn2.chaoshi.rate$respb_scene_name <- factor(abn2.chaoshi.rate$respb_scene_name,
+                                                levels=c("运力取餐前骑手超时取餐",
+                                                         "取餐后配送超时",
+                                                         "运力取餐前商户超时出餐"))
+abn2.chaoshi.rate <- abn2.chaoshi.rate %>% mutate(ratio_payed=ratio_payed/100)
+p2 <- ggplot(abn2.chaoshi.rate, aes(x=order_date,y=ratio_payed)) +
+  geom_line(aes(y = ratio_payed, colour = respb_scene_name)) +
+  theme(text = element_text('SimSun'),
+        legend.position = "bottom",
+        legend.title=element_blank()) +
+  labs(x = "日期", y = "运单超时率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) + 
+  scale_y_continuous(labels=function(x){percent(x,digits=1)}) +
+  ggtitle(paste("运单超时率变化趋势", date_range))
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn2.chaoshi.rate %>% filter(respb_scene_name == "运力取餐前骑手超时取餐"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力取餐前骑手超时取餐: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn2.chaoshi.rate %>% filter(respb_scene_name == "取餐后配送超时"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>取餐后配送超时: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[3]]$text <-
+  apply(abn2.chaoshi.rate %>% filter(respb_scene_name == "运力取餐前商户超时出餐"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力取餐前商户超时出餐: ", percent(as.double(item[7]),3))
+          }
+        )
+p2
+```
+
+
+#### 【订单正常运单异常】
+
+* 本日订单量 `r prettyNum(abn.today.detail.actualcnt.spread[["abn2"]], big.mark=",")`单，占支付订单量`r round(abn.today.detail.cnt.spread[["abn2"]], 2)`%，`r compare_day_desc``r decide_up_down(abn2.diff.compare_day)``r round(abs(abn2.diff.compare_day), 2)`个百分点，<span style="`r text_color(abn2.diff.avg, abn2.diff.sd)`">`r decide_up_down(abn2.diff.avg, GY_DY)`30天内均值`r round(abs(abn2.diff.avg), 2)`个百分点(`r round(abs(abn2.diff.sd), 2)`倍标准差)</span>
+* 30天内均值为 `r round(abn.30days.detail.summary$mean.abn2,3)`%，标准差为 `r round(abn.30days.detail.summary$sd.abn2, 3)`%
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4,fig.width=8}
+abn2.rate <- abn_daily %>%
+  filter(abn == "abn2" & 
+           respb_scene %in% c("2-2-1", "2-4-4", "2-2-4", "2-3-2", "2-4-3", "2-3-3"))  %>%
+  mutate(respb_scene=droplevels(respb_scene),
+         abn=droplevels(abn),
+         respb_scene_name=droplevels(respb_scene_name))
+
+abn2.rate$respb_scene_name <- factor(abn2.rate$respb_scene_name,
+                                                levels=c("运力接单前运单退回商户",
+                                                         "取餐后配送完成欺诈",
+                                                         "运力接单前营业时间外运单退回商家自配送",
+                                                         "运力取餐前商户取消运单",
+                                                         "取餐后配送异常用户原因",
+                                                         "运力取餐前非商户原因取消运单"))
+abn2.rate <- abn2.rate %>% mutate(ratio_payed=ratio_payed/100)
+p2 <- ggplot(abn2.rate, aes(x=order_date,y=ratio_payed)) +
+  geom_line(aes(y = ratio_payed, colour = respb_scene_name)) +
+  theme(text = element_text('SimSun'),
+        legend.position = "bottom",
+        legend.title=element_blank()) +
+  labs(x = "日期", y = "运单异常率") +
+  scale_x_date(breaks = pretty_breaks(15), labels = date_format("%m/%d")) + 
+  scale_y_continuous(trans="log10", breaks = base_breaks(), labels=function(x){percent(x,digits=3)}) +
+  ggtitle(paste("运单异常率变化趋势", date_range))
+p2 <- plotly_build(p2)
+p2$x$data[[1]]$text <-
+  apply(abn2.rate %>% filter(respb_scene_name == "运力接单前运单退回商户"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前运单退回商户: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[2]]$text <-
+  apply(abn2.rate %>% filter(respb_scene_name == "取餐后配送完成欺诈"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>取餐后配送完成欺诈: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[3]]$text <-
+  apply(abn2.rate %>% filter(respb_scene_name == "运力接单前营业时间外运单退回商家自配送"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力接单前营业时间外运单退回商家自配送: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[4]]$text <-
+  apply(abn2.rate %>% filter(respb_scene_name == "运力取餐前商户取消运单"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力取餐前商户取消运单	: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[5]]$text <-
+  apply(abn2.rate %>% filter(respb_scene_name == "取餐后配送异常用户原因"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>取餐后配送异常用户原因: ", percent(as.double(item[7]),3))
+          }
+        )
+p2$x$data[[6]]$text <-
+  apply(abn2.rate %>% filter(respb_scene_name == "运力取餐前非商户原因取消运单"), 1,
+        function(item){
+         paste0(date_desc(item[1]), item[1], " (", weekdays(as.Date(item[1])), ")<br>运力取餐前非商户原因取消运单: ", percent(as.double(item[7]),3))
+          }
+        )
+p2
+```
 
 ```{r echo=FALSE}
 ### 细分场景异常摘要数据 (calculate and save)
