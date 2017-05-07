@@ -6,7 +6,7 @@ output:
     latex_engine: xelatex
   word_document: default
 params:
-    rpt_date: "20170505"
+    rpt_date: "20170506"
 ---
 
 ---
@@ -61,6 +61,7 @@ cat_header <- function() {
 }
 more_detail_table <- function(today_detail) {
   detail_table <- data.frame()
+  if(nrow(today_detail) == 0) { return(detail_table) }
   for (i in 1:nrow(today_detail)){
     
     row_data <- today_detail[i, ]
@@ -90,6 +91,7 @@ more_detail_table <- function(today_detail) {
 }
 
 print_table <- function(detail_table, header_color) {
+  if(nrow(detail_table) == 0) { cat("\n"); return(NA) }
   cat('<div class=',header_color,'>', sep='')
   cat_header()
   for (i in 1:nrow(detail_table)) {
@@ -156,7 +158,9 @@ print_table(abn3_detail_table, 'brown')
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 abn1_detail_table$abn <- "订单取消_运单异常"
-abn1_ydnorm_detail_table$abn <- "订单取消_运单正常"
+if (nrow(abn1_ydnorm_detail_table) > 0) {
+        abn1_ydnorm_detail_table$abn <- "订单取消_运单正常"
+}
 abn2_detail_table$abn <- "订单正常_运单异常"
 abn2_chaoshi_detail_table$abn <- "订单正常_运单超时"  
 abn3_detail_table$abn <- "订单取消_无运单"
