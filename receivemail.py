@@ -22,7 +22,7 @@ if os.path.isfile(filename):
 
 M = imaplib.IMAP4("email.ele.me")
 M.login(os.environ['mail_user'], os.environ['mail_passwd'])
-M.select()
+M.select("inbox/dtquery")
 
 print "loop starts in %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 max_num = int(open("max_mail.id").read())
