@@ -2,7 +2,7 @@
 title: "异常交易监控图表日报邮件系统"
 output: html_document
 params:
-  rpt_date: '20170405'
+  rpt_date: '20170709'
 ---
 
 ---
@@ -22,8 +22,9 @@ a {
 # values
 today <- as.Date(params$rpt_date, format="%Y%m%d")
 start_date <- as.Date("20170205", format="%Y%m%d")
-my_ip <- "10.12.194.196"
-my_port <- "9999"
+my_ip <- "10.12.84.144"
+my_port <- "8080"
+my_folder <- "abn_order"
 # functions
 
 
@@ -34,13 +35,13 @@ for (d in today:start_date) {
          " (",
          weekdays(this_day), ")\n\n", sep="")  
      cat("* [异常交易监控日报", as.character(this_day, format="%m%d"), "](http://",
-         my_ip, ":", my_port, "/abn_ord_dly.",
+         my_ip, ":", my_port, "/", my_folder, "/abn_ord_dly.",
          as.character(this_day, format="%Y%m%d"), ".html)","\n\n", sep="")
      cat("* [附：异常类型细分场景明细", as.character(this_day, format="%m%d"), "](http://",
-         my_ip, ":", my_port, "/abn_ord_dly_app.",
+         my_ip, ":", my_port, "/", my_folder,"/abn_ord_dly_app.",
          as.character(this_day, format="%Y%m%d"), ".html)","\n\n", sep="")
      cat("* [邮件正文", as.character(this_day, format="%m%d"), "](http://",
-         my_ip, ":", my_port, "/abn_ord_dly_smy.",
+         my_ip, ":", my_port, "/", my_folder, "/abn_ord_dly_smy.",
          as.character(this_day, format="%Y%m%d"), ".html)","\n\n", sep="")
 }
 ```

@@ -1,6 +1,6 @@
 ---
 params:
-  rpt_date: '20170505'
+  rpt_date: '20170709'
 ---
 
 ---
@@ -152,16 +152,16 @@ print_table(head(delivery_abn_detail_table,3), "|细分场景|低质量订单量
 
 <br/>
 
-[往期日报](http://10.12.194.196:9999/)
+[往期日报](http://10.12.84.144:8080/abn_order)
 
 <br/>
 
 ```{r echo=FALSE, eval=FALSE}
-[异常交易监控日报`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_ord_dly.`r params$rpt_date`.html)  
+[异常交易监控日报`r substr(params$rpt_date, 5, 8)`](http://10.12.84.144:8080/abn_ord_dly.`r params$rpt_date`.html)  
 <br/>  
-[异常类型细分场景明细`r substr(params$rpt_date, 5, 8)`](http://10.12.194.196:9999/abn_ord_dly_app.`r params$rpt_date`.html)  
+[异常类型细分场景明细`r substr(params$rpt_date, 5, 8)`](http://10.12.84.144:8080/abn_ord_dly_app.`r params$rpt_date`.html)  
 <br/>  
-[往期日报](http://10.12.194.196:9999/)
+[往期日报](http://10.12.84.144:8080/)
 <br/>
 <div class="foot">
 Powered by [R Markdown](http://rmarkdown.rstudio.com/)&emsp;&emsp;&emsp;&emsp;

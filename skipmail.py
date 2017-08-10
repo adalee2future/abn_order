@@ -7,7 +7,7 @@ import os
 def login_mail():
     M = imaplib.IMAP4("email.ele.me")
     login_status, _ = M.login(os.environ['mail_user'], os.environ['mail_passwd'])
-    M.select()
+    M.select('inbox/dtquery')
     return M
 
 M = login_mail()
