@@ -19,3 +19,5 @@ max_mail.id
 *.pyc
 *.swp
 *.bk.*
+*.xlsx
+*.log
